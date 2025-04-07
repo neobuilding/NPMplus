@@ -67,8 +67,8 @@ services:
 #      - "PHP84=true" # Activate PHP84, default false
 #      - "PHP84_APKS=php84-curl php84-openssl" # Add php extensions, see available packages here: https://pkgs.alpinelinux.org/packages?branch=v3.21&repo=community&arch=x86_64&name=php84-*, default none, requires PHP84
 #      - "PHP_APKS=php-pecl-apcu php-pecl-redis" # Add php extensions, see available packages here: https://pkgs.alpinelinux.org/packages?branch=v3.21&repo=community&arch=x86_64&name=php-*, default none, requires PHP82, PHP83 and/or PHP84, not recommended, please use PHP82_APKS, PHP83_APKS or PHP84_APKS
-#      - "INITIAL_ADMIN_EMAIL=initial-email" # email to use instead of admin@example.org on first start of NPMplus for the initial user
-#      - "INITIAL_ADMIN_PASSWORD=initial-password" # password to use instead of a random password which is logged on first start of NPMplus for the initial user
+#      - "INITIAL_ADMIN_EMAIL=<initial@e.mail>" # email to use instead of admin@example.org on first start of NPMplus for the initial user
+#      - "INITIAL_ADMIN_PASSWORD=<initial-password>" # password to use instead of a random password which is logged on first start of NPMplus for the initial user
 #      - "INITIAL_DEFAULT_PAGE=444" # default page to set on first start of NPMplus for the initial user, default congratulations, can be one of: 404, 444, redirect, congratulations or html
 #      - "ENABLE_PRERUN=true" # see readme, default off
 #      - "NGINX_LOAD_OPENAPPSEC_ATTACHMENT_MODULE=true" # loads the openappsec attachment module, you also need to set ipc for NPMplus in this composse file, this will fully disable brotli, even if you enable it inside the UI, default false
