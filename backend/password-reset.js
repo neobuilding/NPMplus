@@ -18,14 +18,20 @@ Arguments:
 }
 
 const args = process.argv.slice(2);
-
 const USER_EMAIL = args[0];
+const PASSWORD = args[1];
+
+if (!USER_EMAIL && !PASSWORD) {
+	console.error('ERROR: User email address must be set.');
+	console.error('ERROR: Password must be set.');
+	usage();
+}
+
 if (!USER_EMAIL) {
 	console.error('ERROR: User email address must be set.');
 	usage();
 }
 
-const PASSWORD = args[1];
 if (!PASSWORD) {
 	console.error('ERROR: Password must be set.');
 	usage();
@@ -65,4 +71,7 @@ if (fs.existsSync('/data/npmplus/database.sqlite')) {
 
 		process.exit(0);
 	});
+} else {
+	console.error('ERROR: Cannot connect to the sqlite database.');
+	process.exit(1);
 }
