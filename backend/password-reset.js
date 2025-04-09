@@ -13,9 +13,7 @@ Reset password of a NPMplus user.
 
 Arguments:
   USER_EMAIL      Email address of the user to reset the password.
-  PASSWORD        Optional new password of the user.  If not set, password
-                  is set to 'changeme'.
-`);
+  PASSWORD        Optional new password of the user. If not set, password is set to 'changeme'.`);
 	process.exit(1);
 }
 
@@ -49,8 +47,7 @@ if (fs.existsSync('/data/npmplus/database.sqlite')) {
                     SELECT * 
                     FROM user 
                     WHERE user.id = auth.user_id AND user.email = ?
-                )
-            `);
+                )`);
 
 			const result = stmt.run(PASSWORD_HASH, USER_EMAIL);
 
