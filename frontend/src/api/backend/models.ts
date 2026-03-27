@@ -112,6 +112,7 @@ export interface ProxyLocation {
 	npmplusFancyindex: boolean;
 	npmplusXFrameOptions: string;
 	npmplusAuthRequest: string;
+	accessLists?: AccessList[];
 }
 
 export interface ProxyHost {
