@@ -100,6 +100,7 @@ export interface ProxyLocation {
 	forwardScheme: string;
 	forwardHost: string;
 	forwardPort: number;
+	accessListIds: number[];
 	cachingEnabled: boolean;
 	blockExploits: boolean;
 	allowWebsocketUpgrade: boolean;
@@ -122,7 +123,7 @@ export interface ProxyHost {
 	forwardScheme: string;
 	forwardHost: string;
 	forwardPort: number;
-	accessListId: number;
+	accessListIds: number[];
 	certificateId: number;
 	sslForced: boolean;
 	cachingEnabled: boolean;
@@ -141,6 +142,7 @@ export interface ProxyHost {
 	// Expansions:
 	owner?: User;
 	accessList?: AccessList;
+	accessLists?: AccessList[];
 	certificate?: Certificate;
 	npmplusNoindex: boolean;
 	npmplusCrowdsecAppsec: boolean;
