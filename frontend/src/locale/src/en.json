@@ -80,6 +80,18 @@
 	"access-list.public.subtitle": {
 		"defaultMessage": "No basic auth required"
 	},
+	"access-list.global": {
+		"defaultMessage": "Global"
+	},
+	"access-list.global.subtitle": {
+		"defaultMessage": "Use the same as the Global Access List"
+	},
+	"access-list.custom": {
+		"defaultMessage": "Custom"
+	},
+	"access-list.custom.default": {
+		"defaultMessage": "Use a custom access list type"
+	},
 	"access-list.rule-source.placeholder": {
 		"defaultMessage": "192.168.1.100 or 192.168.1.0/24 or 2001:0db8::/32"
 	},

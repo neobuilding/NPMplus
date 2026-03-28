@@ -6,7 +6,7 @@ import { type ReactNode, useState } from "react";
 import { Alert } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import {
-	AccessField,
+	AccessFields,
 	Button,
 	DomainNamesField,
 	HasPermission,
@@ -89,12 +89,13 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							forwardScheme: data?.forwardScheme || "http",
 							forwardHost: data?.forwardHost || "",
 							forwardPort: data?.forwardPort || undefined,
-							accessListId: data?.accessListId || 0,
 							cachingEnabled: data?.cachingEnabled || false,
 							blockExploits: data?.blockExploits || false,
 							allowWebsocketUpgrade: data?.allowWebsocketUpgrade || true,
 							// Locations tab
 							locations: data?.locations || [],
+							// Access Lists tab
+							accessListIds: data?.accessListIds || [],
 							// SSL tab
 							certificateId: data?.certificateId || 0,
 							sslForced: data?.sslForced || false,
@@ -297,7 +298,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														</div>
 													</div>
 												</div>
-												<AccessField />
 												<div className="my-3">
 													<h4 className="py-2">
 														<T id="options" />
@@ -684,6 +684,9 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 											</div>
 											<div className="tab-pane" id="tab-locations" role="tabpanel">
 												<LocationsFields initialValues={data?.locations || []} />
+											</div>
+											<div className="tab-pane" id="tab-access-lists" role="tabpanel">
+												<AccessFields initialValues={data?.accessLists || []} />
 											</div>
 											<div className="tab-pane" id="tab-ssl" role="tabpanel">
 												<SSLCertificateField

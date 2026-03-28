@@ -24,6 +24,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		forwardScheme: "http",
 		forwardHost: "",
 		forwardPort: "" as any,
+		accessListIds: [],
 		cachingEnabled: false,
 		blockExploits: false,
 		allowWebsocketUpgrade: true,
