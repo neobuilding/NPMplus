@@ -686,7 +686,11 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												<LocationsFields initialValues={data?.locations || []} />
 											</div>
 											<div className="tab-pane" id="tab-access-lists" role="tabpanel">
-												<AccessFields initialValues={data?.accessLists || []} />
+												<AccessFields 
+													globalAccessLists={data?.accessLists || []} 
+													globalAccessListType={data.accessListType}  
+													proxyLocations={data?.locations || []} 
+												/>
 											</div>
 											<div className="tab-pane" id="tab-ssl" role="tabpanel">
 												<SSLCertificateField

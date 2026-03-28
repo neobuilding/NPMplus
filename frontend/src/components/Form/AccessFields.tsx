@@ -1,19 +1,20 @@
-import { IconSettings } from "@tabler/icons-react";
+// import { IconSettings } from "@tabler/icons-react";
 import { IconLock, IconLockOpen2 } from "@tabler/icons-react";
-import CodeEditor from "@uiw/react-textarea-code-editor";
+// import CodeEditor from "@uiw/react-textarea-code-editor";
 import cn from "classnames";
-import { Field, useFormikContext } from "formik";
+// import { Field, useFormikContext } from "formik";
 import { useState } from "react";
-import type { AccessList, ProxyLocation, ProxyHost  } from "src/api/backend";
+import type { AccessList, ProxyLocation } from "src/api/backend";
 import { formatDateTime, intl, T } from "src/locale";
 import styles from "./LocationsFields.module.css";
 import type { ReactNode } from "react";
-import Select, { type ActionMeta, components, type OptionProps } from "react-select";
+import Select, { /*type ActionMeta,*/ components, type OptionProps } from "react-select";
 import { useLocaleState } from "src/context";
 import { useAccessLists } from "src/hooks";
 
 interface Props {
-	proxyHost: ProxyHost;
+	globalAccessLists: AccessList[];
+	globalAccessListType: never[];
 	proxyLocations: ProxyLocation[];
 	name?: string;
 }
@@ -38,18 +39,18 @@ const Option = (props: OptionProps<AccessOption>) => {
 	);
 };
 
-export function AccessFields({ proxyHost, proxyLocations, name = "access-lists", label = "access-list", id = "accessListId" }: Props) {
-	const [globalAccessListValues, setGlobalAccessListValues] = useState<ProxyHost>(proxyHost.accessLists || []);
-	
-	const [locationAccessListValues, setLocationAccessListValues] = useState<ProxyLocation[]>(proxyLocations || []);
-	const { setFieldValue } = useFormikContext();
+export function AccessFields({ globalAccessLists, globalAccessListType, proxyLocations/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
+	const [globalAccessListValues/*, setGlobalAccessListValues*/] = useState<AccessList[]>(globalAccessLists || []);
+	proxyLocations.length == 0;
+	// const [locationAccessListValues, setLocationAccessListValues] = useState<ProxyLocation[]>(proxyLocations || []);
+	// const { setFieldValue } = useFormikContext();
 
 	const { locale } = useLocaleState();
 	const { isLoading, isError, error, data } = useAccessLists(["owner", "items", "clients"]);
 
-	const handleChange = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
-		setFieldValue(name, newValue?.value);
-	};
+	// const handleChange = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
+	// 	setFieldValue(name, newValue?.value);
+	// };
 
 	const options: AccessOption[] =
 		data?.map((item: AccessList) => ({
@@ -80,13 +81,13 @@ export function AccessFields({ proxyHost, proxyLocations, name = "access-lists",
 	// const handleOptionChanged = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
 	// }
 
-	const isOptionDisabled = (selectedOptions: AccessOption[]) : boolean =>  {
-		const used = new Set(selectedOptions);
-		return used.has(publicOption);
+	const isOptionDisabled = (selectedOptions: AccessList[]): boolean => {
+		const used = new Set(selectedOptions?.map((item: AccessList) => (item.id || 0)) || []);
+		return used.has(publicOption.value);
 	}
 
-	const findFirstAvailableOption = (selectedOptions: AccessOption[]) : AccessOption | undefined => {
-		const used = new Set(selectedOptions.map(o => o.value));
+	const findFirstAvailableOption = (selectedOptions: AccessList[]) : AccessOption | undefined => {
+		const used = new Set(selectedOptions?.map((item: AccessList) => (item.id || 0)) || []);
 		for (const opt of options) {
 			if (!used.has(opt.value)) {
 				return opt; // first available in order
@@ -102,13 +103,21 @@ export function AccessFields({ proxyHost, proxyLocations, name = "access-lists",
 
 	// 	setLocationAccessListValues([...locationAccessListValues, blankItem]);
 	// };
+	const handleAdd = () => {
 
-	const handleGlobalAccessListValues = () => {
-		if (globalAccessListValues.length < options.length) {
-			const defaultOption = findFirstAvailableOption(globalAccessListValues);
-			setGlobalAccessListValues([...locationAccessListValues, defaultOption]);
-		}
-	};
+	}
+	const handleChange = (idx: number, field: string, fieldValue: any) => {
+		idx = idx;
+		field = field;
+		fieldValue = fieldValue;
+
+	}
+	// const handleAddGlobalAccessListValues = () => {
+	// 	if (globalAccessListValues.length < options.length) {
+	// 		const defaultOption = findFirstAvailableOption(globalAccessListValues);
+	// 		setGlobalAccessListValues([...globalAccessListValues, defaultOption]);
+	// 	}
+	// };
 
 
 	// const handleRemove = (idx: number) => {
@@ -132,21 +141,20 @@ export function AccessFields({ proxyHost, proxyLocations, name = "access-lists",
 		);
 	}
 
-
+	const globalIdx : number = -1;
 	return (
 		<>
-			<div key={idx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
+			<div key={globalIdx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
 				<div className="card-body">
 					<div className="row">
 						<div className="col-md-10">
 							<div className="input-group mb-3">
-								<span className="input-group-text">Location</span>
-								<span className="input-group-text">item.path</span>
+								<span className="input-group-text">{intl.formatMessage({ id: "access-list.global" })}</span>
 								<select
-									id="locationType"
+									id="accessControlType"
 									className="form-select w-auto flex-grow-0"
-									value={item.locationType}
-									onChange={(e) => handleChange(idx, "locationType", e.target.value)}
+									value={globalAccessListType ? globalAccessListType : "public"}
+									onChange={(e) => handleChange(globalIdx, "accessControlType", e.target.value)}
 								>
 									<option value="public">{intl.formatMessage({ id: "access-list.public" })}</option>
 									<option value="custom">{intl.formatMessage({ id: "access-list.custom" })}</option>
@@ -170,7 +178,7 @@ export function AccessFields({ proxyHost, proxyLocations, name = "access-lists",
 										height: "100%",
 									}),
 								}}
-								onChange={handleOptionChanged},
+								//  onChange={handleGlobalAccessListValues}
 								isDisabled={isOptionDisabled(globalAccessListValues)}
 							/>
 						) : null}
@@ -184,10 +192,10 @@ export function AccessFields({ proxyHost, proxyLocations, name = "access-lists",
 					<div className="mt-1">
 						<a
 							href="#"
-							onClick={(e) => {
-								e.preventDefault();
-								handleRemove(idx);
-							}}
+							// onClick={(e) => {
+							// 	e.preventDefault();
+							// 	handleRemove(globalIdx);
+							// }}
 						>
 						<T id="action.delete" />
 						</a>

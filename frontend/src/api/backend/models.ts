@@ -113,6 +113,7 @@ export interface ProxyLocation {
 	npmplusXFrameOptions: string;
 	npmplusAuthRequest: string;
 	accessLists?: AccessList[];
+	accessListType: "global" | "public" | "custom";
 }
 
 export interface ProxyHost {
@@ -144,6 +145,7 @@ export interface ProxyHost {
 	owner?: User;
 	accessList?: AccessList;
 	accessLists?: AccessList[];
+	accessListType: "public" | "custom";
 	certificate?: Certificate;
 	npmplusNoindex: boolean;
 	npmplusCrowdsecAppsec: boolean;
