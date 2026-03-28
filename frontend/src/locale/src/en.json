@@ -263,6 +263,9 @@
 	"column.access": {
 		"defaultMessage": "Access"
 	},
+	"column.access-lists": {
+		"defaultMessage": "Access Lists"
+	},
 	"column.authorization": {
 		"defaultMessage": "Authorization"
 	},

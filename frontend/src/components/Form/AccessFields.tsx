@@ -4,7 +4,7 @@ import { IconLock, IconLockOpen2 } from "@tabler/icons-react";
 import cn from "classnames";
 // import { Field, useFormikContext } from "formik";
 import { useState } from "react";
-import type { AccessList, ProxyLocation } from "src/api/backend";
+import type { AccessList, ProxyLocation, ProxyHost } from "src/api/backend";
 import { formatDateTime, intl, T } from "src/locale";
 import styles from "./LocationsFields.module.css";
 import type { ReactNode } from "react";
@@ -14,7 +14,7 @@ import { useAccessLists } from "src/hooks";
 
 interface Props {
 	globalAccessLists: AccessList[];
-	globalAccessListType: never[];
+	globalAccessListType: ProxyHost["accessListType"];
 	proxyLocations: ProxyLocation[];
 	name?: string;
 }

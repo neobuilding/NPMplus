@@ -96,6 +96,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							locations: data?.locations || [],
 							// Access Lists tab
 							accessListIds: data?.accessListIds || [],
+							accessListType: data?.accessListType || "public",
 							// SSL tab
 							certificateId: data?.certificateId || 0,
 							sslForced: data?.sslForced || false,
@@ -159,6 +160,18 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												>
 													{<T id="column.custom-locations" />}
 													{values?.locations?.length > 0 ? "*" : ""}
+												</a>
+											</li>
+											<li className="nav-item" role="access-lists">
+												<a
+													href="#tab-access-lists"
+													className="nav-link"
+													data-bs-toggle="tab"
+													aria-selected="false"
+													tabIndex={-1}
+													role="tab"
+												>
+													<T id="column.access-lists" />
 												</a>
 											</li>
 											<li className="nav-item" role="presentation">

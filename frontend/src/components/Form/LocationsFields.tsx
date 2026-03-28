@@ -36,6 +36,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
+		accessListType: "global"
 	};
 
 	const toggleAdvVisible = (idx: number) => {
