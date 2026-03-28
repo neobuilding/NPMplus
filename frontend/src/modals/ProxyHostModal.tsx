@@ -72,6 +72,15 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		});
 	};
 
+	const onAccessListChange = (field: string, value: any) => {
+		if (data && field === "accessControlType") {
+				data.accessListType = value;
+		}
+		if (data && field === "accessList" && data.accessLists) {
+			data.accessLists.push(value);
+		}
+	}
+
 	return (
 		<Modal show={visible} onHide={remove}>
 			{!isLoading && (error || userError) && (
@@ -160,18 +169,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												>
 													{<T id="column.custom-locations" />}
 													{values?.locations?.length > 0 ? "*" : ""}
-												</a>
-											</li>
-											<li className="nav-item" role="access-lists">
-												<a
-													href="#tab-access-lists"
-													className="nav-link"
-													data-bs-toggle="tab"
-													aria-selected="false"
-													tabIndex={-1}
-													role="tab"
-												>
-													<T id="column.access-lists" />
 												</a>
 											</li>
 											<li className="nav-item" role="presentation">
@@ -310,6 +307,18 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 															</button>
 														</div>
 													</div>
+												</div>
+												<div className="row">
+													<h4 className="py-2">
+														<T id="proxy-host.access-lists" />
+													</h4>
+													<AccessFields 
+														name = "globalAccessList"
+														initialAccessListType={data.accessListType || "public"} 
+														location={undefined}  
+														initialAccessLists={data?.accessLists || []} 
+														onChange={(field, value) => onAccessListChange(field, value)}
+													/>
 												</div>
 												<div className="my-3">
 													<h4 className="py-2">
@@ -697,13 +706,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 											</div>
 											<div className="tab-pane" id="tab-locations" role="tabpanel">
 												<LocationsFields initialValues={data?.locations || []} />
-											</div>
-											<div className="tab-pane" id="tab-access-lists" role="tabpanel">
-												<AccessFields 
-													globalAccessLists={data?.accessLists || []} 
-													globalAccessListType={data.accessListType}  
-													proxyLocations={data?.locations || []} 
-												/>
 											</div>
 											<div className="tab-pane" id="tab-ssl" role="tabpanel">
 												<SSLCertificateField

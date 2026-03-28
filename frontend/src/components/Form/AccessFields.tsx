@@ -1,22 +1,25 @@
 // import { IconSettings } from "@tabler/icons-react";
-import { IconLock, IconLockOpen2 } from "@tabler/icons-react";
+import { IconLock/*, IconLockOpen2 */} from "@tabler/icons-react";
 // import CodeEditor from "@uiw/react-textarea-code-editor";
-import cn from "classnames";
-// import { Field, useFormikContext } from "formik";
-import { useState } from "react";
-import type { AccessList, ProxyLocation, ProxyHost } from "src/api/backend";
-import { formatDateTime, intl, T } from "src/locale";
-import styles from "./LocationsFields.module.css";
+// import cn from "classnames";
+// import { Field/*, useFormikContext */} from "formik";
+// import { useState } from "react";
+import type { AccessList, ProxyLocation/*, ProxyHost*/ } from "src/api/backend";
+import { formatDateTime, intl/*, T*/ } from "src/locale";
+// import styles from "./LocationsFields.module.css";
 import type { ReactNode } from "react";
+import type { SingleValue, MultiValue } from "react-select";
 import Select, { /*type ActionMeta,*/ components, type OptionProps } from "react-select";
 import { useLocaleState } from "src/context";
 import { useAccessLists } from "src/hooks";
+// import { AccessField } from "src/components";
 
 interface Props {
-	globalAccessLists: AccessList[];
-	globalAccessListType: ProxyHost["accessListType"];
-	proxyLocations: ProxyLocation[];
-	name?: string;
+	name: string;
+	location?: string;
+	initialAccessListType: ProxyLocation["accessListType"];
+	initialAccessLists: AccessList[];
+	onChange: (field: string, value: any) => void;
 }
 
 interface AccessOption {
@@ -24,6 +27,7 @@ interface AccessOption {
 	readonly label: string;
 	readonly subLabel: string;
 	readonly icon: ReactNode;
+	readonly meta: AccessList;
 }
 
 const Option = (props: OptionProps<AccessOption>) => {
@@ -39,15 +43,16 @@ const Option = (props: OptionProps<AccessOption>) => {
 	);
 };
 
-export function AccessFields({ globalAccessLists, globalAccessListType, proxyLocations/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
-	const [globalAccessListValues/*, setGlobalAccessListValues*/] = useState<AccessList[]>(globalAccessLists || []);
-	proxyLocations.length == 0;
+export function AccessFields({ name, initialAccessListType, location, initialAccessLists, onChange/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
+	// const [values, /*, setValues*/] = useState<AccessList[]>(initialAccessLists || []);
+	// const [aclValue, /*, setValues*/] = useState<ProxyLocation["accessListType"]>(initialAccessListType || []);
 	// const [locationAccessListValues, setLocationAccessListValues] = useState<ProxyLocation[]>(proxyLocations || []);
 	// const { setFieldValue } = useFormikContext();
-
+	let values = initialAccessLists;
+	let aclValue = initialAccessListType;
 	const { locale } = useLocaleState();
 	const { isLoading, isError, error, data } = useAccessLists(["owner", "items", "clients"]);
-
+console.log("AccessFields renderb");
 	// const handleChange = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
 	// 	setFieldValue(name, newValue?.value);
 	// };
@@ -65,35 +70,8 @@ export function AccessFields({ globalAccessLists, globalAccessListType, proxyLoc
 				},
 			),
 			icon: <IconLock size={14} className="text-lime" />,
+			meta: item
 		})) || [];
-
-	// Public option
-	const publicOption = {
-		value: 0,
-		label: intl.formatMessage({ id: "access-list.public" }),
-		subLabel: intl.formatMessage({ id: "access-list.public.subtitle" }),
-		icon: <IconLockOpen2 size={14} className="text-red" />,
-	};
-	options?.unshift(publicOption);
-
-
-
-	// const handleOptionChanged = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
-	// }
-
-	const isOptionDisabled = (selectedOptions: AccessList[]): boolean => {
-		const used = new Set(selectedOptions?.map((item: AccessList) => (item.id || 0)) || []);
-		return used.has(publicOption.value);
-	}
-
-	const findFirstAvailableOption = (selectedOptions: AccessList[]) : AccessOption | undefined => {
-		const used = new Set(selectedOptions?.map((item: AccessList) => (item.id || 0)) || []);
-		for (const opt of options) {
-			if (!used.has(opt.value)) {
-				return opt; // first available in order
-			}
-		}
-	}
 
 	// const handleLocationAccessListAdd = () => {
 	// 	if(locationAccessListValues.length == 0) {
@@ -103,15 +81,9 @@ export function AccessFields({ globalAccessLists, globalAccessListType, proxyLoc
 
 	// 	setLocationAccessListValues([...locationAccessListValues, blankItem]);
 	// };
-	const handleAdd = () => {
+	// const handleAdd = () => {
 
-	}
-	const handleChange = (idx: number, field: string, fieldValue: any) => {
-		idx = idx;
-		field = field;
-		fieldValue = fieldValue;
-
-	}
+	// }
 	// const handleAddGlobalAccessListValues = () => {
 	// 	if (globalAccessListValues.length < options.length) {
 	// 		const defaultOption = findFirstAvailableOption(globalAccessListValues);
@@ -119,150 +91,90 @@ export function AccessFields({ globalAccessLists, globalAccessListType, proxyLoc
 	// 	}
 	// };
 
-
 	// const handleRemove = (idx: number) => {
 	// 	const newValues = values.filter((_: ProxyLocation, i: number) => i !== idx);
 	// 	setValues(newValues);
 	// 	setFormField(newValues);
 	// };
 
-	// const setFormField = (newValues: ProxyLocation[]) => {
+	const findFirstAvailableOption = (): AccessOption | undefined => {
+		const used = new Set(values?.map((item: AccessList) => (item.id || 0)) || []);
+		for (const opt of options) {
+			if (!used.has(opt.value)) {
+				return opt; // first available in order
+			}
+		}
+	}
+
+	// const setFormField = (newValues: ProxyHost) => {
 	// 	const filtered = newValues.filter((v: ProxyLocation) => v?.path?.trim() !== "");
 	// 	setFieldValue(name, filtered);
 	// };
 
-	if (globalAccessListValues.length === 0) {
-		return (
-			<div className="text-center">
-				<button type="button" className="btn my-3" onClick={handleAdd}>
-					<T id="action.add-location" />
-				</button>
-			</div>
-		);
-	}
+	// if (globalAccessListValues.length === 0) {
+	// 	return (
+	// 		<div className="text-center">
+	// 			<button type="button" className="btn my-3" onClick={handleAdd}>
+	// 				<T id="action.add-location" />
+	// 			</button>
+	// 		</div>
+	// 	);
+	// }
 
-	const globalIdx : number = -1;
+	const onAccessListChange = (value: SingleValue<AccessOption> | MultiValue<AccessOption>) => {
+		value = value;
+		// todo implement this correctly
+		// const accessList = new Array(values?.map((item: AccessList) => (item.id || 0)) || []);
+		// if (value) {
+		// 	accessList
+		// 	onChange("accessList", value);
+		// }
+	}
+console.log("AccessFields rendera");
 	return (
 		<>
-			<div key={globalIdx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
-				<div className="card-body">
-					<div className="row">
-						<div className="col-md-10">
-							<div className="input-group mb-3">
-								<span className="input-group-text">{intl.formatMessage({ id: "access-list.global" })}</span>
-								<select
-									id="accessControlType"
-									className="form-select w-auto flex-grow-0"
-									value={globalAccessListType ? globalAccessListType : "public"}
-									onChange={(e) => handleChange(globalIdx, "accessControlType", e.target.value)}
-								>
-									<option value="public">{intl.formatMessage({ id: "access-list.public" })}</option>
-									<option value="custom">{intl.formatMessage({ id: "access-list.custom" })}</option>
-								</select>
-							</div>
-						</div>
-					</div>
-					<div className="row mb-1">
-						{isLoading ? <div className="placeholder placeholder-lg col-12 my-3 placeholder-glow" /> : null}
-						{isError ? <div className="invalid-feedback">{`${error}`}</div> : null}
-						{!isLoading && !isError ? (
-							<Select
-								className="react-select-container"
-								classNamePrefix="react-select"
-								defaultValue={findFirstAvailableOption(globalAccessListValues)}
-								options={options}
-								components={{ Option }}
-								styles={{
-									option: (base) => ({
-										...base,
-										height: "100%",
-									}),
-								}}
-								//  onChange={handleGlobalAccessListValues}
-								isDisabled={isOptionDisabled(globalAccessListValues)}
-							/>
-						) : null}
-						
-					</div>
-					<div>
-						<button type="button" className="btn btn-sm" onClick={handleAdd}>
-							<T id="action.add-access-list" />
-						</button>
-					</div>
-					<div className="mt-1">
-						<a
-							href="#"
-							// onClick={(e) => {
-							// 	e.preventDefault();
-							// 	handleRemove(globalIdx);
-							// }}
-						>
-						<T id="action.delete" />
-						</a>
-					</div>
-				</div>
-			</div>
-			{/* {values.map((item: ProxyLocation, idx: number) => (
-				<div key={idx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
-					<div className="card-body">
-						<div className="row">
-							<div className="col-md-10">
-								<div className="input-group mb-3">
-									<span className="input-group-text">Location</span>
-									<span className="input-group-text">item.path</span>
-									<select
-										id="locationType"
-										className="form-select w-auto flex-grow-0"
-										value={item.locationType}
-										onChange={(e) => handleChange(idx, "locationType", e.target.value)}
-									>
-										<option value="public">{intl.formatMessage({ id: "access-list.public" })}</option>
-										<option value="global">{intl.formatMessage({ id: "access-list.global" })}</option>
-										<option value="custom">{intl.formatMessage({ id: "access-list.custom" })}</option>
-									</select>
-								</div>
-							</div>
-						</div>
-						<div className="row mb-1">
-							{isLoading ? <div className="placeholder placeholder-lg col-12 my-3 placeholder-glow" /> : null}
-							{isError ? <div className="invalid-feedback">{`${error}`}</div> : null}
-							{!isLoading && !isError ? (
-								<Select
-									className="react-select-container"
-									classNamePrefix="react-select"
-									defaultValue={options.find((o) => o.value === field.value) || options[0]}
-									options={options}
-									components={{ Option }}
-									styles={{
-										option: (base) => ({
-											...base,
-											height: "100%",
-										}),
-									}}
-									onChange={handleOptionChanged}
-								/>
-							) : null}
-							{form.errors[field.name] ? (
-								<div className="invalid-feedback">
-									{form.errors[field.name] && form.touched[field.name] ? form.errors[field.name] : null}
-								</div>
-							) : null}
-						</div>
-						<div className="mt-1">
-							<a
-								href="#"
-								onClick={(e) => {
-									e.preventDefault();
-									handleRemove(idx);
-								}}
+			<div className="mb-3">
+
+				{isLoading ? <div className="placeholder placeholder-lg col-12 my-3 placeholder-glow" /> : null}
+				{isError ? <div className="invalid-feedback">{`${error}`}</div> : null}
+
+				<div className="row">
+					<div className="col-md-10">
+						<div className="input-group mb-3">
+							<span className="input-group-text">{location ? location : intl.formatMessage({ id: "access-list.global" })}</span>
+							<select
+								id={"accessControlType-" + name}
+								className="form-select w-auto flex-grow-0"
+								value={initialAccessListType ? initialAccessListType : "public"}
+								onChange={(e) => onChange("accessControlType", e.target.value)}
 							>
-								<T id="action.delete" />
-							</a>
+								{!isLoading && !isError && location ? null : <option value="global">{intl.formatMessage({ id: "access-list.global" })}</option>}
+								<option value="public">{intl.formatMessage({ id: "access-list.public" })}</option>
+								{!isLoading && !isError ? <option value="custom">{intl.formatMessage({ id: "access-list.custom" })}</option> : null}
+							</select>
 						</div>
 					</div>
 				</div>
-			))} */}
-			
+				{!isLoading && !isError ?
+					values.map((/*item: AccessList, idx: number*/) => (
+						<Select
+							className="react-select-container"
+							classNamePrefix="react-select"
+							defaultValue={/*options.find((o) => o.value === field.value) ||*/ findFirstAvailableOption()}
+							options={options}
+							components={{ Option }}
+							styles={{
+								option: (base) => ({
+									...base,
+									height: "100%",
+								}),
+							}}
+							onChange={(e) => onAccessListChange(e)}
+							isDisabled={aclValue != "custom"}
+						/>
+					)
+					) : null}
+			</div>
 		</>
 	);
 }

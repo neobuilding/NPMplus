@@ -113,7 +113,7 @@ export interface ProxyLocation {
 	npmplusXFrameOptions: string;
 	npmplusAuthRequest: string;
 	accessLists?: AccessList[];
-	accessListType: "global" | "public" | "custom";
+	accessListType: ProxyHost["accessListType"] | "global";
 }
 
 export interface ProxyHost {

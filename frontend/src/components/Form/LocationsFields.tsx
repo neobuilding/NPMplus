@@ -4,6 +4,7 @@ import cn from "classnames";
 import { useFormikContext } from "formik";
 import { useState } from "react";
 import type { ProxyLocation } from "src/api/backend";
+import { AccessFields } from "src/components";
 import { intl, T } from "src/locale";
 import styles from "./LocationsFields.module.css";
 
@@ -64,6 +65,12 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 			}
 			if (field === "npmplusProxyRequestBuffering" && fieldValue === true) {
 				updatedLocation.npmplusCrowdsecAppsec = true;
+			}
+			if (field === "accessControlType") {
+				updatedLocation.accessListType = fieldValue;
+			}
+			if (field === "accessList" && updatedLocation.accessLists) {
+				updatedLocation.accessLists.push(fieldValue);
 			}
 
 			return updatedLocation;
@@ -204,6 +211,19 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 										onChange={(e) => handleChange(idx, "forwardPort", e.target.value)}
 									/>
 								</div>
+							</div>
+
+							<div className="my-3">
+								<h4 className="py-2">
+									<T id="proxy-host.access-lists" />
+								</h4>
+								<AccessFields 
+									name={"accessField-"+idx}
+									initialAccessListType={item.accessListType || "global"} 
+									location={item.path}  
+									initialAccessLists={item?.accessLists || []}
+									onChange={(field, value) => handleChange(idx, field, value)}
+								/>
 							</div>
 							<div className="my-3">
 								<h4 className="py-2">
