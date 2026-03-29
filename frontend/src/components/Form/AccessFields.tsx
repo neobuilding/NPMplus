@@ -1,19 +1,11 @@
-// import { IconSettings } from "@tabler/icons-react";
-import { IconLock, IconLockOpen2 } from "@tabler/icons-react";
-// import CodeEditor from "@uiw/react-textarea-code-editor";
-// import cn from "classnames";
-// import { Field/*, useFormikContext */} from "formik";
+import { IconLock, IconLockOpen2, IconX } from "@tabler/icons-react";
 import {  useFormikContext } from "formik";
-import { useState } from "react";
-import type { AccessList, ProxyLocation/*, ProxyHost*/ } from "src/api/backend";
-import { formatDateTime, intl, T } from "src/locale";
-// import styles from "./LocationsFields.module.css";
-import type { ReactNode } from "react";
-import type { SingleValue, MultiValue } from "react-select";
-import Select, { /*type ActionMeta,*/ components, type OptionProps } from "react-select";
+import { useState, ReactNode } from "react";
+import Select, { components, type OptionProps } from "react-select";
+import type { AccessList, ProxyLocation } from "src/api/backend";
 import { useLocaleState } from "src/context";
 import { useAccessLists } from "src/hooks";
-// import { AccessField } from "src/components";
+import { formatDateTime, intl, T } from "src/locale";
 
 interface Props {
 	location?: string;
@@ -64,7 +56,7 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 	);
 };
 
-export function AccessFields({ initialAccessListType, location, initialAccessLists, name/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
+export function AccessFields({ initialAccessListType, location, initialAccessLists, name }: Props) {
 
 	const [values, setValues] = useState(initialAccessLists || []);
 	const [aclValue, setAclValue] = useState(initialAccessListType);
@@ -113,8 +105,10 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 
 	}
 
-	const options: AccessOption[] =
+	const defaultOptions: AccessOption[] =
 		data?.map(createDefaultItem) || [];
+	const valuesSet = new Set(values?.map((item: AccessList) => (item.id || 0)) || []);
+	const options = defaultOptions.filter((option:AccessOption,_) =>!valuesSet.has(option.value));
 
 	const typeOptions = (): AccessTypeOption[] => {
 		let ret = [];
@@ -122,31 +116,21 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			ret.push(createOption("global"));
 		}
 		ret.push(createOption("public"));
-		if (!isLoading && !isError) {
+		if (!isLoading && !isError && defaultOptions.length > 0) {
 			ret.push(createOption("custom"));
 		}
 		return ret;
-
 	}
 
 	const findFirstAvailableOption = (): AccessOption | undefined => {
-		const used = new Set(values?.map((item: AccessList) => (item.id || 0)) || []);
-		for (const opt of options) {
-			if (!used.has(opt.value)) {
-				return opt; // first available in order
-			}
-		}
+		return options.length > 0 ? options[0] : undefined;
 	}
 
-	const onAccessListChange = (value: SingleValue<AccessOption> | MultiValue<AccessOption>, acl: AccessList) => {
-		value = value;
+	const onAccessListChange = (acl: AccessList, idx: number) => {
 		acl = acl;
-		// todo implement this correctly
-		// const accessList = new Array(values?.map((item: AccessList) => (item.id || 0)) || []);
-		// if (value) {
-		// 	accessList
-		// 	onChange("accessList", value);
-		// }
+		values[idx] = acl;
+		setValues(values);
+		setFieldValue(name, values);
 	}
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
@@ -162,7 +146,6 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		setFieldValue(name, newValues);
 	}
 
-
 	return (
 		<div className="mb-3">
 
@@ -171,9 +154,10 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			<div className="row">
 				<div className="col-md-10">
 					<div className="input-group mb-3">
-						<Select<AccessTypeOption>
+						<Select<AccessTypeOption, false>
 							className="react-select-container"
 							classNamePrefix="react-select"
+							isSearchable={false}
 							defaultValue={createOption(initialAccessListType)}
 							options={typeOptions()}
 							components={{ Option: TypeOption }}
@@ -185,11 +169,9 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							}}
 							onChange={(e) => {
 								if (!e || Array.isArray(e))  return;
-
 								const value = e.type;
 								setAclValue(value);
 								setFieldValue("accessListType", value);
-								
 							}}
 						/>
 					</div>
@@ -199,10 +181,10 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				<>
 					{values.map((item: AccessList, idx: number) => (
 						<div className="input-group mb-3">
-							<Select
+							<Select<AccessOption, false>
 								className="react-select-container"
 								classNamePrefix="react-select"
-								defaultValue={options.find((o) => o.value === item.id) || findFirstAvailableOption()}
+								defaultValue={defaultOptions.find((o) => o.value === item.id) || findFirstAvailableOption()}
 								options={options}
 								components={{ Option }}
 								styles={{
@@ -211,7 +193,11 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 										height: "100%",
 									}),
 								}}
-								onChange={(e) => onAccessListChange(e, item)}
+								onChange={(e) => 
+									{
+										if (!e || Array.isArray(e))  return;
+										onAccessListChange(e.meta, idx);
+									}}
 								isDisabled={aclValue != "custom"}
 							/>
 							<a
@@ -221,14 +207,19 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 									e.preventDefault();
 									handleRemove(idx);
 								}}
-							></a>
+							>
+								<IconX size={16} />
+							</a>
 						</div>
 					))}
-					<div className="text-center">
-						<button type="button" className="btn my-3" onClick={handleAdd}>
-							<T id="action.add" />
-						</button>
-					</div>
+					
+					{values.length < defaultOptions.length && ( // only show add button if there are more acls that can be added
+						<div className="text-center">
+							<button type="button" className="btn my-3" onClick={handleAdd}>
+								<T id="action.add" />
+							</button>
+						</div>
+					)}
 				</>
 				: null}
 		</div>

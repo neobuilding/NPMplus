@@ -72,15 +72,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		});
 	};
 
-	// const onAccessListChange = (field: string, value: any, setFieldValue: any) => {
-	// 	if (data && field === "accessControlType") {
-	// 		setFieldValue("accessListType", value);
-	// 	}
-	// 	if (data && field === "accessList" && data.accessLists) {
-	// 		setFieldValue("accessListIds", (prev: number[]) => [...prev, value.id]);
-	// 	}
-	// }
-
 	return (
 		<Modal show={visible} onHide={remove}>
 			{!isLoading && (error || userError) && (
@@ -316,7 +307,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														initialAccessListType={data.accessListType || "public"} 
 														initialAccessLists={data?.accessLists || []} 
 														name="accessLists"
-														// onChange={(field, value) => onAccessListChange(field, value,setFieldValue)}
 													/>
 												</div>
 												<div className="my-3">

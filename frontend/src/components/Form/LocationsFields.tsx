@@ -66,13 +66,6 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 			if (field === "npmplusProxyRequestBuffering" && fieldValue === true) {
 				updatedLocation.npmplusCrowdsecAppsec = true;
 			}
-			if (field === "accessControlType") {
-				updatedLocation.accessListType = fieldValue;
-			}
-			if (field === "accessList" && updatedLocation.accessLists) {
-				updatedLocation.accessLists = [...(updatedLocation.accessLists || []), fieldValue];
-			}
-
 			return updatedLocation;
 		});
 		setValues(newValues);
@@ -222,7 +215,6 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									location={item.path}  
 									initialAccessLists={item?.accessLists || []}
 									name={`locations[${idx}].accessLists`}
-									// onChange={(field, value) => handleChange(idx, field, value)}
 								/>
 							</div>
 							<div className="my-3">

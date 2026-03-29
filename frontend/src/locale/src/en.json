@@ -89,7 +89,7 @@
 	"access-list.custom": {
 		"defaultMessage": "Custom"
 	},
-	"access-list.custom.default": {
+	"access-list.custom.subtitle": {
 		"defaultMessage": "Use a custom access list type"
 	},
 	"access-list.rule-source.placeholder": {
