@@ -12,7 +12,6 @@ interface Props {
 	initialAccessListType: ProxyLocation["accessListType"];
 	initialAccessLists: AccessList[];
 	name: string;
-	//onChange: (field: string, value: any) => void;
 }
 
 interface AccessOption {

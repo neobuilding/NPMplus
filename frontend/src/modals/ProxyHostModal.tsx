@@ -39,16 +39,41 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		if (isSubmitting) return;
 		setIsSubmitting(true);
 		setErrorMsg(null);
+		
+		// Snapshot for rollback in case of an error
+		const originalGlobalAcls = JSON.parse(JSON.stringify(values.locations || []));
+		const originalLocations = JSON.parse(JSON.stringify(values.locations || []));
+
 		// Populate locations with global acls over here
 		// Set the unrestricted acls here (remove any data in their acl lists)
+		const globalType = values.accessListType;
+		let globalAcls = values.accessLists || [];
+		if(globalType === "public") {
+			globalAcls = [];
+		}
+		const locations = (values.locations || []).map((loc: any) => {
+			const newLoc = { ...loc };
+			if (loc.accessListType === "global") {
+				newLoc.accessLists = globalAcls;
+			} else if (loc.accessListType === "public") {
+				newLoc.accessLists = [];
+			}
+			return newLoc;
+		});
+
+
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,
+			accessLists: globalAcls,
+			locations,
 			forwardPort: values.forwardPort || null,
 		};
 
 		setProxyHost(payload, {
 			onError: (err: any) => {
+				values.accessLists = originalGlobalAcls;
+				values.locations = originalLocations;
 				if (err.payload?.debug?.stack) {
 					setErrorMsg(
 						<div className="w-100">
@@ -90,14 +115,13 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							forwardScheme: data?.forwardScheme || "http",
 							forwardHost: data?.forwardHost || "",
 							forwardPort: data?.forwardPort || undefined,
+							accessListIds: data?.accessListIds || [],
+							accessListType: data?.accessListType || "public",
 							cachingEnabled: data?.cachingEnabled || false,
 							blockExploits: data?.blockExploits || false,
 							allowWebsocketUpgrade: data?.allowWebsocketUpgrade || true,
 							// Locations tab
-							locations: data?.locations || [],
-							// Access Lists tab
-							accessListIds: data?.accessListIds || [],
-							accessListType: data?.accessListType || "public",
+							locations: data?.locations || [],					
 							// SSL tab
 							certificateId: data?.certificateId || 0,
 							sslForced: data?.sslForced || false,
