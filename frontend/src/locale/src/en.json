@@ -665,6 +665,9 @@
 	"proxy-host.forward-host-path": {
 		"defaultMessage": "Forward Hostname / IP / Path"
 	},
+	"proxy-host.global-access-lists": {
+		"defaultMessage": "Global Access Lists"
+	},
 	"proxy-hosts": {
 		"defaultMessage": "Proxy Hosts"
 	},

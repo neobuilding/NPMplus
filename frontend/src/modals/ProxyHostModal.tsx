@@ -39,7 +39,8 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		if (isSubmitting) return;
 		setIsSubmitting(true);
 		setErrorMsg(null);
-
+		// Populate locations with global acls over here
+		// Set the unrestricted acls here (remove any data in their acl lists)
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,
@@ -301,7 +302,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												</div>
 												<div className="row">
 													<h4 className="py-2">
-														<T id="proxy-host.access-lists" />
+														<T id="global-access-lists" />
 													</h4>
 													<AccessFields 
 														initialAccessListType={data.accessListType || "public"} 

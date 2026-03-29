@@ -1,4 +1,4 @@
-import { IconLock, IconLockOpen2, IconX } from "@tabler/icons-react";
+import { IconGlobe, IconLock, IconLockOpen2, IconX } from "@tabler/icons-react";
 import {  useFormikContext } from "formik";
 import { useState, ReactNode } from "react";
 import Select, { components, type OptionProps } from "react-select";
@@ -83,6 +83,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const createOption = (type: ProxyLocation["accessListType"]): AccessTypeOption => {
 		if (type == "global") {
 			return {
+				icon: <IconGlobe size={14} className="text-cyan" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.global" }),
 				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
@@ -122,21 +123,22 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		return ret;
 	}
 
-	const findFirstAvailableOption = (): AccessOption | undefined => {
-		return options.length > 0 ? options[0] : undefined;
+	const findFirstAvailableOption = (): AccessOption | null => {
+		return options.length > 0 ? options[0] : null;
 	}
 
 	const onAccessListChange = (acl: AccessList, idx: number) => {
-		acl = acl;
-		values[idx] = acl;
-		setValues(values);
-		setFieldValue(name, values);
+		const newValues = values.map((val, i) => (i === idx ? acl : val));
+		setValues(newValues);
+		setFieldValue(name, newValues);
 	}
+
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
 		if (newAccessOption) {
-			setValues([...values, newAccessOption.meta]);
-			setFieldValue(name, newAccessOption.meta);
+			const newValues = [...values, newAccessOption.meta];
+			setValues(newValues);
+			setFieldValue(name, newValues);
 		}
 	}
 
@@ -180,11 +182,11 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			{!isLoading && !isError && aclValue == "custom" ?
 				<>
 					{values.map((item: AccessList, idx: number) => (
-						<div className="input-group mb-3">
+						<div key={item.id ?? idx} className="input-group mb-3">
 							<Select<AccessOption, false>
 								className="react-select-container"
 								classNamePrefix="react-select"
-								defaultValue={defaultOptions.find((o) => o.value === item.id) || findFirstAvailableOption()}
+								value={defaultOptions.find((o) => o.value === item.id) || findFirstAvailableOption()}
 								options={options}
 								components={{ Option }}
 								styles={{
