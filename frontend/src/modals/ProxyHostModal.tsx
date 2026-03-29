@@ -41,22 +41,22 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		setErrorMsg(null);
 		
 		// Snapshot for rollback in case of an error
-		const originalGlobalAcls = JSON.parse(JSON.stringify(values.locations || []));
+		const originalGlobalAclIds = JSON.parse(JSON.stringify(values.accessListIds || []));
 		const originalLocations = JSON.parse(JSON.stringify(values.locations || []));
 
 		// Populate locations with global acls over here
 		// Set the unrestricted acls here (remove any data in their acl lists)
 		const globalType = values.accessListType;
-		let globalAcls = values.accessLists || [];
+		let globalAclIds = values.accessListIds || [];
 		if(globalType === "public") {
-			globalAcls = [];
+			globalAclIds = [];
 		}
 		const locations = (values.locations || []).map((loc: any) => {
 			const newLoc = { ...loc };
 			if (loc.accessListType === "global") {
-				newLoc.accessLists = globalAcls;
+				newLoc.accessListIds = globalAclIds;
 			} else if (loc.accessListType === "public") {
-				newLoc.accessLists = [];
+				newLoc.accessListIds = [];
 			}
 			return newLoc;
 		});
@@ -65,14 +65,14 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,
-			accessLists: globalAcls,
+			accessListIds: globalAclIds,
 			locations,
 			forwardPort: values.forwardPort || null,
 		};
 
 		setProxyHost(payload, {
 			onError: (err: any) => {
-				values.accessLists = originalGlobalAcls;
+				values.accessListIds = originalGlobalAclIds;
 				values.locations = originalLocations;
 				if (err.payload?.debug?.stack) {
 					setErrorMsg(
@@ -330,8 +330,8 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 													</h4>
 													<AccessFields 
 														initialAccessListType={data.accessListType || "public"} 
-														initialAccessLists={data?.accessLists || []} 
-														name="accessLists"
+														initialAccessListIds={data?.accessListIds || []} 
+														name="accessListIds"
 													/>
 												</div>
 												<div className="my-3">

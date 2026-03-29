@@ -10,7 +10,7 @@ import { formatDateTime, intl, T } from "src/locale";
 interface Props {
 	location?: string;
 	initialAccessListType: ProxyLocation["accessListType"];
-	initialAccessLists: AccessList[];
+	initialAccessListIds: number[];
 	name: string;
 }
 
@@ -55,9 +55,9 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 	);
 };
 
-export function AccessFields({ initialAccessListType, location, initialAccessLists, name }: Props) {
+export function AccessFields({ initialAccessListType, location, initialAccessListIds, name }: Props) {
 
-	const [values, setValues] = useState(initialAccessLists || []);
+	const [values, setValues] = useState(initialAccessListIds || []);
 	const [aclValue, setAclValue] = useState(initialAccessListType);
 	const { locale } = useLocaleState();
 	const { setFieldValue } = useFormikContext();
@@ -107,7 +107,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 
 	const defaultOptions: AccessOption[] =
 		data?.map(createDefaultItem) || [];
-	const valuesSet = new Set(values?.map((item: AccessList) => (item.id || 0)) || []);
+	const valuesSet = new Set(values?.map((item: number) => (item || 0)) || []);
 	const options = defaultOptions.filter((option:AccessOption,_) =>!valuesSet.has(option.value));
 
 	const typeOptions = (): AccessTypeOption[] => {
@@ -127,22 +127,22 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	}
 
 	const onAccessListChange = (acl: AccessList, idx: number) => {
-		const newValues = values.map((val, i) => (i === idx ? acl : val));
+		const newValues = values.map((id: number, i: number) => (i === idx ? acl.id || 0 : id));
 		setValues(newValues);
 		setFieldValue(name, newValues);
 	}
 
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
-		if (newAccessOption) {
-			const newValues = [...values, newAccessOption.meta];
+		if (newAccessOption && newAccessOption.meta.id) {
+			const newValues = [...values, newAccessOption.meta.id];
 			setValues(newValues);
 			setFieldValue(name, newValues);
 		}
 	}
 
-	const handleRemove = (idx: number) => {
- 		const newValues = values.filter((_, i: number) => i !== idx);
+	const handleRemove = (aclId: number) => {
+ 		const newValues = values.filter((id:number, _) => id !== aclId);
 		setValues(newValues)
 		setFieldValue(name, newValues);
 	}
@@ -180,12 +180,12 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			</div>
 			{!isLoading && !isError && aclValue == "custom" ?
 				<>
-					{values.map((item: AccessList, idx: number) => (
-						<div key={item.id ?? idx} className="input-group mb-3">
+					{values.map((item: number, idx: number) => (
+						<div key={item ?? idx} className="input-group mb-3">
 							<Select<AccessOption, false>
 								className="react-select-container"
 								classNamePrefix="react-select"
-								value={defaultOptions.find((o) => o.value === item.id) || findFirstAvailableOption()}
+								value={defaultOptions.find((o) => o.value === item) || findFirstAvailableOption()}
 								options={options}
 								components={{ Option }}
 								styles={{
@@ -206,7 +206,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								className="btn btn-ghost btn-danger p-0"
 								onClick={(e) => {
 									e.preventDefault();
-									handleRemove(idx);
+									handleRemove(item);
 								}}
 							>
 								<IconX size={16} />
