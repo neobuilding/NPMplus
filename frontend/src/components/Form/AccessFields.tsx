@@ -3,7 +3,8 @@ import { IconLock, IconLockOpen2 } from "@tabler/icons-react";
 // import CodeEditor from "@uiw/react-textarea-code-editor";
 // import cn from "classnames";
 // import { Field/*, useFormikContext */} from "formik";
-// import { useState } from "react";
+import {  useFormikContext } from "formik";
+import { useState } from "react";
 import type { AccessList, ProxyLocation/*, ProxyHost*/ } from "src/api/backend";
 import { formatDateTime, intl, T } from "src/locale";
 // import styles from "./LocationsFields.module.css";
@@ -18,7 +19,8 @@ interface Props {
 	location?: string;
 	initialAccessListType: ProxyLocation["accessListType"];
 	initialAccessLists: AccessList[];
-	onChange: (field: string, value: any) => void;
+	name: string;
+	//onChange: (field: string, value: any) => void;
 }
 
 interface AccessOption {
@@ -30,6 +32,7 @@ interface AccessOption {
 
 interface AccessTypeOption {
 	readonly label: string;
+	readonly type: ProxyLocation["accessListType"];
 	readonly subLabel: string;
 	readonly icon?: ReactNode;
 
@@ -53,7 +56,7 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 		<components.Option {...props}>
 			<div className="flex-fill">
 				<div className="font-weight-medium">
-					{props.data.icon} <strong>{props.data.label}</strong>
+					{props.data.icon}<strong>{props.data.label}</strong>
 				</div>
 				<div className="text-secondary mt-1 ps-3">{props.data.subLabel}</div>
 			</div>
@@ -61,11 +64,12 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 	);
 };
 
-export function AccessFields({ initialAccessListType, location, initialAccessLists, onChange/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
+export function AccessFields({ initialAccessListType, location, initialAccessLists, name/*, name = "access-lists", label = "access-list", id = "accessListId"*/ }: Props) {
 
-	const values = initialAccessLists;
-	const aclValue = initialAccessListType;
+	const [values, setValues] = useState(initialAccessLists || []);
+	const [aclValue, setAclValue] = useState(initialAccessListType);
 	const { locale } = useLocaleState();
+	const { setFieldValue } = useFormikContext();
 	const { isLoading, isError, error, data } = useAccessLists(["owner", "items", "clients"]);
 
 	const createDefaultItem = (item: AccessList): AccessOption => {
@@ -84,24 +88,27 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		};
 	}
 
-	const createOption = (label: ProxyLocation["accessListType"]): AccessTypeOption => {
-		if (label == "global") {
+	const createOption = (type: ProxyLocation["accessListType"]): AccessTypeOption => {
+		if (type == "global") {
 			return {
-				label: label,
-				subLabel: intl.formatMessage({ id: "access-list.global" }),
+				type: type,
+				label: intl.formatMessage({ id: "access-list.global" }),
+				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
 			};
 		}
-		if (label == "custom") {
+		if (type == "custom") {
 			return {
 				icon: <IconLock size={14} className="text-lime" />,
-				label: label,
-				subLabel: intl.formatMessage({ id: "access-list.custom" }),
+				type: type,
+				label: intl.formatMessage({ id: "access-list.custom" }),
+				subLabel: intl.formatMessage({ id: "access-list.custom.subtitle" }),
 			};
 		}
 		return {
 			icon: <IconLockOpen2 size={14} className="text-red" />,
-			label: label,
-			subLabel: intl.formatMessage({ id: "access-list.public" }),
+			type: type,
+			label: intl.formatMessage({ id: "access-list.public" }),
+			subLabel: intl.formatMessage({ id: "access-list.public.subtitle" }),
 		};
 
 	}
@@ -144,13 +151,15 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
 		if (newAccessOption) {
-			onChange("accessList", newAccessOption.meta);
+			setValues([...values, newAccessOption.meta]);
+			setFieldValue(name, newAccessOption.meta);
 		}
 	}
 
 	const handleRemove = (idx: number) => {
-		idx = idx;
-		onChange("accessListRemoved", idx);
+ 		const newValues = values.filter((_, i: number) => i !== idx);
+		setValues(newValues)
+		setFieldValue(name, newValues);
 	}
 
 
@@ -174,7 +183,15 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 									height: "100%",
 								}),
 							}}
-							onChange={(e) => onChange("accessControlType", (e as SingleValue<AccessTypeOption>)?.label || null)} />
+							onChange={(e) => {
+								if (!e || Array.isArray(e))  return;
+
+								const value = e.type;
+								setAclValue(value);
+								setFieldValue("accessListType", value);
+								
+							}}
+						/>
 					</div>
 				</div>
 			</div>

@@ -70,7 +70,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 				updatedLocation.accessListType = fieldValue;
 			}
 			if (field === "accessList" && updatedLocation.accessLists) {
-				updatedLocation.accessLists.push(fieldValue);
+				updatedLocation.accessLists = [...(updatedLocation.accessLists || []), fieldValue];
 			}
 
 			return updatedLocation;
@@ -221,7 +221,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									initialAccessListType={item.accessListType || "global"} 
 									location={item.path}  
 									initialAccessLists={item?.accessLists || []}
-									onChange={(field, value) => handleChange(idx, field, value)}
+									name={`locations[${idx}].accessLists`}
+									// onChange={(field, value) => handleChange(idx, field, value)}
 								/>
 							</div>
 							<div className="my-3">

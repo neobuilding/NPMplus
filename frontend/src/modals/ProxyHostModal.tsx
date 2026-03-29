@@ -72,14 +72,14 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		});
 	};
 
-	const onAccessListChange = (field: string, value: any, setFieldValue: any) => {
-		if (data && field === "accessControlType") {
-			setFieldValue("accessListType", value);
-		}
-		if (data && field === "accessList" && data.accessLists) {
-			setFieldValue("accessListIds", (prev: number[]) => [...prev, value.id]);
-		}
-	}
+	// const onAccessListChange = (field: string, value: any, setFieldValue: any) => {
+	// 	if (data && field === "accessControlType") {
+	// 		setFieldValue("accessListType", value);
+	// 	}
+	// 	if (data && field === "accessList" && data.accessLists) {
+	// 		setFieldValue("accessListIds", (prev: number[]) => [...prev, value.id]);
+	// 	}
+	// }
 
 	return (
 		<Modal show={visible} onHide={remove}>
@@ -130,7 +130,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 					}
 					onSubmit={onSubmit}
 				>
-					{({ setFieldValue, values }) => (
+					{() => (
 						<Form>
 							<Modal.Header closeButton>
 								<Modal.Title>
@@ -313,9 +313,10 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														<T id="proxy-host.access-lists" />
 													</h4>
 													<AccessFields 
-														initialAccessListType={values.accessListType || "public"} 
-														initialAccessLists={values?.accessLists || []} 
-														onChange={(field, value) => onAccessListChange(field, value,setFieldValue)}
+														initialAccessListType={data.accessListType || "public"} 
+														initialAccessLists={data?.accessLists || []} 
+														name="accessLists"
+														// onChange={(field, value) => onAccessListChange(field, value,setFieldValue)}
 													/>
 												</div>
 												<div className="my-3">
