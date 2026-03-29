@@ -56,9 +56,8 @@ export function AccessFields({ name, initialAccessListType, location, initialAcc
 	// const handleChange = (newValue: any, _actionMeta: ActionMeta<AccessOption>) => {
 	// 	setFieldValue(name, newValue?.value);
 	// };
-
-	const options: AccessOption[] =
-		data?.map((item: AccessList) => ({
+	const createDefaultItem = (item: AccessList) : AccessOption=> {
+		return {
 			value: item.id || 0,
 			label: item.name,
 			subLabel: intl.formatMessage(
@@ -71,7 +70,10 @@ export function AccessFields({ name, initialAccessListType, location, initialAcc
 			),
 			icon: <IconLock size={14} className="text-lime" />,
 			meta: item
-		})) || [];
+		};
+	}
+	const options: AccessOption[] =
+		data?.map(createDefaultItem) || [];
 
 	// const handleLocationAccessListAdd = () => {
 	// 	if(locationAccessListValues.length == 0) {
@@ -132,11 +134,15 @@ export function AccessFields({ name, initialAccessListType, location, initialAcc
 		// }
 	}
 	const handleAdd = () => {
-
+		const newAccessOption = findFirstAvailableOption();
+		if (newAccessOption) {
+			onChange("accessList", newAccessOption.meta);
+		}
 	}
 
 	const handleRemove = (idx: number) => {
 		idx = idx;
+		onChange("accessListRemoved", idx);
 	}
 	return (
 		<div className="mb-3">
@@ -150,7 +156,7 @@ export function AccessFields({ name, initialAccessListType, location, initialAcc
 						<select
 							id={"accessControlType-" + name}
 							className="form-select w-auto flex-grow-0"
-							value={initialAccessListType ? initialAccessListType : "public"}
+							value={initialAccessListType || "public"}
 							onChange={(e) => onChange("accessControlType", e.target.value)}
 						>
 							{!isLoading && !isError && location ? null : <option value="global">{intl.formatMessage({ id: "access-list.global" })}</option>}
@@ -167,7 +173,7 @@ export function AccessFields({ name, initialAccessListType, location, initialAcc
 							<Select
 								className="react-select-container"
 								classNamePrefix="react-select"
-								defaultValue={/*options.find((o) => o.value === field.value) ||*/ findFirstAvailableOption()}
+								defaultValue={options.find((o) => o.value === item.id) || findFirstAvailableOption()}
 								options={options}
 								components={{ Option }}
 								styles={{
