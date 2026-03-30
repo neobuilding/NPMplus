@@ -45,6 +45,16 @@ class ProxyHost extends Model {
 		if (typeof this.meta === "undefined") {
 			this.meta = {};
 		}
+
+		// Default for access list type
+		if (typeof this.access_list_type === "undefined") {
+			this.access_list_type = "public";
+		}
+
+		// Default for access list ids
+		if (typeof this.access_list_ids === "undefined") {
+			this.access_list_ids = [];
+		}
 	}
 
 	$beforeUpdate() {
@@ -74,11 +84,11 @@ class ProxyHost extends Model {
 	}
 
 	static get defaultAllowGraph() {
-		return "[owner,access_list.[clients,items],certificate]";
+		return "[owner,access_lists.[clients,items],certificate]";
 	}
 
 	static get defaultExpand() {
-		return ["owner", "certificate", "access_list.[clients,items]"];
+		return ["owner", "certificate", "access_lists.[clients,items]"];
 	}
 
 	static get defaultOrder() {
@@ -103,6 +113,17 @@ class ProxyHost extends Model {
 				modelClass: AccessList,
 				join: {
 					from: "proxy_host.access_list_id",
+					to: "access_list.id",
+				},
+				modify: (qb) => {
+					qb.where("access_list.is_deleted", 0);
+				},
+			},
+			access_lists: {
+				relation: Model.HasManyRelation,
+				modelClass: AccessList,
+				join: {
+					from: "proxy_host.access_list_ids",
 					to: "access_list.id",
 				},
 				modify: (qb) => {
