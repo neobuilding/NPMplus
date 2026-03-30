@@ -69,20 +69,20 @@ const internalHost = {
 	cleanAccessListTypes: (row) => {
 		// BACKWARDS COMPATIBLITY: Fix for the db field using the old (deprecated) access list id
 		// add new access_list_ids as needed
-		if (row.access_list_ids) {
-			row.accessListIds = JSON.parse(row.access_list_ids);
-		}
+		// if (row.access_list_ids) {
+		// 	row.accessListIds = JSON.parse(row.access_list_ids);
+		// }
 
-		if (row.access_list_type) {
-			row.accessListType = row.access_list_type;
-		}
-		if (!row.accessListIds) {
-			if (row.access_list_id && row.access_list_id !== 0) {
-				row.accessListIds = [row.access_list_id];
-			} else {
-				row.accessListIds = [];
-			}
-		}
+		// if (row.access_list_type) {
+		// 	row.accessListType = row.access_list_type;
+		// }
+		// if (!row.accessListIds) {
+		// 	if (row.access_list_id && row.access_list_id !== 0) {
+		// 		row.accessListIds = [row.access_list_id];
+		// 	} else {
+		// 		row.accessListIds = [];
+		// 	}
+		// }
 		return row;
 	},
 

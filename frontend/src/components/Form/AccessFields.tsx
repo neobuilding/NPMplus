@@ -1,5 +1,5 @@
-import { IconGlobe, IconLock, IconLockOpen2, IconX } from "@tabler/icons-react";
-import {  useFormikContext } from "formik";
+import { IconArrowDown, IconWorld, IconLock, IconLockOpen2, IconArrowUp, IconX } from "@tabler/icons-react";
+import { useFormikContext } from "formik";
 import { useState, ReactNode } from "react";
 import Select, { components, type OptionProps } from "react-select";
 import type { AccessList, ProxyLocation } from "src/api/backend";
@@ -82,7 +82,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const createOption = (type: ProxyLocation["accessListType"]): AccessTypeOption => {
 		if (type == "global") {
 			return {
-				icon: <IconGlobe size={14} className="text-cyan" />,
+				icon: <IconWorld size={14} className="text-cyan" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.global" }),
 				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
@@ -108,7 +108,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const defaultOptions: AccessOption[] =
 		data?.map(createDefaultItem) || [];
 	const valuesSet = new Set(values?.map((item: number) => (item || 0)) || []);
-	const options = defaultOptions.filter((option:AccessOption,_) =>!valuesSet.has(option.value));
+	const options = defaultOptions.filter((option: AccessOption, _) => !valuesSet.has(option.value));
 
 	const typeOptions = (): AccessTypeOption[] => {
 		let ret = [];
@@ -141,8 +141,32 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		}
 	}
 
+	const handleMoveUp = (idx: number) => {
+		if (idx > 0) {
+			const newIdx = idx - 1;
+			let newValues = [ ...values ];
+			const aclId = newValues[idx];
+			newValues[idx] = newValues[newIdx];
+			newValues[newIdx] = aclId;
+			setValues(newValues);
+			setFieldValue(name, newValues);
+		}
+	}
+
+	const handleMoveDown = (idx: number) => {
+		if (idx < (values.length - 1)) {
+			const newIdx = idx + 1;
+			let newValues = [ ...values ];
+			const aclId = newValues[idx];
+			newValues[idx] = newValues[newIdx];
+			newValues[newIdx] = aclId;
+			setValues(newValues);
+			setFieldValue(name, newValues);
+		}
+	}
+
 	const handleRemove = (aclId: number) => {
- 		const newValues = values.filter((id:number, _) => id !== aclId);
+		const newValues = values.filter((id: number, _) => id !== aclId);
 		setValues(newValues)
 		setFieldValue(name, newValues);
 	}
@@ -169,7 +193,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								}),
 							}}
 							onChange={(e) => {
-								if (!e || Array.isArray(e))  return;
+								if (!e || Array.isArray(e)) return;
 								const value = e.type;
 								setAclValue(value);
 								setFieldValue("accessListType", value);
@@ -194,13 +218,38 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 										height: "100%",
 									}),
 								}}
-								onChange={(e) => 
-									{
-										if (!e || Array.isArray(e))  return;
-										onAccessListChange(e.meta, idx);
-									}}
+								onChange={(e) => {
+									if (!e || Array.isArray(e)) return;
+									onAccessListChange(e.meta, idx);
+								}}
 								isDisabled={aclValue != "custom"}
 							/>
+							{idx > 0 ?
+								<a
+									role="button"
+									className="btn my-3"
+									onClick={(e) => {
+										e.preventDefault();
+										handleMoveUp(idx);
+									}}
+								>
+									<IconArrowUp size={16} />
+								</a>
+								: null
+							}
+							{idx < values.length - 1 ?
+								<a
+									role="button"
+									className="btn my-3"
+									onClick={(e) => {
+										e.preventDefault();
+										handleMoveDown(idx);
+									}}
+								>
+									<IconArrowDown size={16} />
+								</a>
+								: null
+							}
 							<a
 								role="button"
 								className="btn btn-ghost btn-danger p-0"
@@ -213,7 +262,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							</a>
 						</div>
 					))}
-					
+
 					{values.length < defaultOptions.length && ( // only show add button if there are more acls that can be added
 						<div className="text-center">
 							<button type="button" className="btn my-3" onClick={handleAdd}>

@@ -61,20 +61,6 @@ const internalProxyHost = {
 					thisData.npmplus_location_config = "";
 				}
 
-				{
-					// BACKWARDS COMPATIBLITY: Fix for the db field using the old (deprecated) access list id
-					// This should eventually be removed in future releases
-					if (thisData.accessListIds !== "undefined") {
-						thisData.access_list_ids = JSON.stringify(thisData.accessListIds);
-						delete thisData.accessListIds;
-					}
-
-					if (thisData.accessListType !== "undefined") {
-						thisData.access_list_type = thisData.accessListType;
-						delete thisData.accessListType;
-					}
-				}
-
 				return proxyHostModel.query().insertAndFetch(thisData).then(utils.omitRow(omissions()));
 			})
 			.then((row) => {
@@ -200,19 +186,6 @@ const internalProxyHost = {
 				);
 
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
-				{
-					// BACKWARDS COMPATIBLITY: Fix for the db field using the old (deprecated) access list id
-					// This should eventually be removed in future releases
-					if (thisData.accessListIds !== undefined) {
-						thisData.access_list_ids = JSON.stringify(thisData.accessListIds);
-						delete thisData.accessListIds;
-					}
-
-					if (thisData.accessListType !== undefined) {
-						thisData.access_list_type = thisData.accessListType;
-						delete thisData.accessListType;
-					}
-				}
 
 				return proxyHostModel
 					.query()

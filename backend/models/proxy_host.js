@@ -84,11 +84,11 @@ class ProxyHost extends Model {
 	}
 
 	static get defaultAllowGraph() {
-		return "[owner,access_lists.[clients,items],certificate]";
+		return "[owner,access_list.[clients,items],certificate]";
 	}
 
 	static get defaultExpand() {
-		return ["owner", "certificate", "access_lists.[clients,items]"];
+		return ["owner", "certificate", "access_list.[clients,items]"];
 	}
 
 	static get defaultOrder() {
@@ -119,17 +119,17 @@ class ProxyHost extends Model {
 					qb.where("access_list.is_deleted", 0);
 				},
 			},
-			access_lists: {
-				relation: Model.HasManyRelation,
-				modelClass: AccessList,
-				join: {
-					from: "proxy_host.access_list_ids",
-					to: "access_list.id",
-				},
-				modify: (qb) => {
-					qb.where("access_list.is_deleted", 0);
-				},
-			},
+			// access_lists: {
+			// 	relation: Model.HasManyRelation,
+			// 	modelClass: AccessList,
+			// 	join: {
+			// 		from: "proxy_host.access_list_ids",
+			// 		to: "access_list.id",
+			// 	},
+			// 	modify: (qb) => {
+			// 		qb.where("access_list.is_deleted", 0);
+			// 	},
+			// },
 			certificate: {
 				relation: Model.HasOneRelation,
 				modelClass: Certificate,

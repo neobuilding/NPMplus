@@ -326,7 +326,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												</div>
 												<div className="row">
 													<h4 className="py-2">
-														<T id="global-access-lists" />
+														<T id="proxy-host.global-access-lists" />
 													</h4>
 													<AccessFields 
 														initialAccessListType={data.accessListType || "public"} 
