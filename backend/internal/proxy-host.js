@@ -25,7 +25,8 @@ const internalProxyHost = {
 		if (createCertificate) {
 			delete thisData.certificate_id;
 		}
-
+		data.access_list_ids = data.access_list_ids || [];
+		data.access_list_type = data.access_list_type || "public";
 		return access
 			.can("proxy_hosts:create", thisData)
 			.then(() => {
@@ -124,7 +125,8 @@ const internalProxyHost = {
 		if (createCertificate) {
 			delete thisData.certificate_id;
 		}
-
+		data.access_list_ids = data.access_list_ids || [];
+		data.access_list_type = data.access_list_type || "public";
 		return access
 			.can("proxy_hosts:update", thisData.id)
 			.then((/*access_data*/) => {

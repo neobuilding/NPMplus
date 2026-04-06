@@ -45,6 +45,32 @@ const internalHost = {
 
 		return rows;
 	},
+	/**
+	 * used by the get/update functions of hosts, this sets the access_list_ids
+	 * @param {Object} row 
+	 * @returns {Object}
+	 */
+	cleanAccessListTypes(row) {
+		if (!row) return row;
+
+		// ensure array exists
+		if (!Array.isArray(row.access_list_ids)) {
+			row.access_list_ids = [];
+		}
+
+		// fallback from old column (only if needed)
+		if (row.access_list_ids.length === 0 && row.access_list_id && row.access_list_id !== 0) {
+			row.access_list_ids = [row.access_list_id];
+			row.access_list_type = "custom";
+		}
+
+		// ensure type exists
+		if (!row.access_list_type) {
+			row.access_list_type = "public";
+		}
+
+		return row;
+	},
 
 	/**
 	 * used by the get/update functions of hosts, this removes the certificate meta if present
@@ -57,32 +83,6 @@ const internalHost = {
 			row.certificate.meta = {};
 		}
 
-		return row;
-	},
-
-	/**
-	 * used by the get/update/create functions of hosts, this updates the access list types
-	 * from the old (single access list) version to the multi access list version
-	 * @param {*} row 
-	 * @returns {Object}
-	 */
-	cleanAccessListTypes: (row) => {
-		// BACKWARDS COMPATIBLITY: Fix for the db field using the old (deprecated) access list id
-		// add new access_list_ids as needed
-		// if (row.access_list_ids) {
-		// 	row.accessListIds = JSON.parse(row.access_list_ids);
-		// }
-
-		// if (row.access_list_type) {
-		// 	row.accessListType = row.access_list_type;
-		// }
-		// if (!row.accessListIds) {
-		// 	if (row.access_list_id && row.access_list_id !== 0) {
-		// 		row.accessListIds = [row.access_list_id];
-		// 	} else {
-		// 		row.accessListIds = [];
-		// 	}
-		// }
 		return row;
 	},
 

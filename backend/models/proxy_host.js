@@ -80,7 +80,7 @@ class ProxyHost extends Model {
 	}
 
 	static get jsonAttributes() {
-		return ["domain_names", "meta", "locations"];
+		return ["domain_names", "meta", "locations", "access_list_ids"];
 	}
 
 	static get defaultAllowGraph() {
@@ -88,7 +88,7 @@ class ProxyHost extends Model {
 	}
 
 	static get defaultExpand() {
-		return ["owner", "certificate", "access_list.[clients,items]"];
+		return ["owner", "certificate"];
 	}
 
 	static get defaultOrder() {
@@ -108,28 +108,17 @@ class ProxyHost extends Model {
 					qb.where("user.is_deleted", 0);
 				},
 			},
-			access_list: {
-				relation: Model.HasOneRelation,
+			access_lists: {
+				relation: Model.HasManyRelation,
 				modelClass: AccessList,
 				join: {
-					from: "proxy_host.access_list_id",
+					from: "proxy_host.access_list_ids",
 					to: "access_list.id",
 				},
 				modify: (qb) => {
 					qb.where("access_list.is_deleted", 0);
 				},
 			},
-			// access_lists: {
-			// 	relation: Model.HasManyRelation,
-			// 	modelClass: AccessList,
-			// 	join: {
-			// 		from: "proxy_host.access_list_ids",
-			// 		to: "access_list.id",
-			// 	},
-			// 	modify: (qb) => {
-			// 		qb.where("access_list.is_deleted", 0);
-			// 	},
-			// },
 			certificate: {
 				relation: Model.HasOneRelation,
 				modelClass: Certificate,

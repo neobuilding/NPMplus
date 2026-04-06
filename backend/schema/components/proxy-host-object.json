@@ -9,7 +9,8 @@
 		"domain_names",
 		"forward_host",
 		"forward_port",
-		"access_list_id",
+		"access_list_ids",
+		"access_list_type",
 		"certificate_id",
 		"ssl_forced",
 		"caching_enabled",
@@ -64,8 +65,15 @@
 			"maximum": 65535,
 			"example": 8080
 		},
-		"access_list_id": {
-			"$ref": "../common.json#/properties/access_list_id"
+		"access_list_ids":{
+			"type": "array",
+			"minItems": 0,
+			"items": {
+				"$ref": "../common.json#/properties/access_list_ids"
+			}
+		},
+		"access_list_type": {
+			"$ref": "../common.json#/properties/access_list_type"
 		},
 		"certificate_id": {
 			"$ref": "../common.json#/properties/certificate_id"
@@ -288,16 +296,12 @@
 			"$ref": "./user-object.json"
 		},
 		"access_list": {
-			"oneOf": [
-				{
-					"type": "null",
-					"example": null
-				},
-				{
-					"$ref": "./access-list-object.json"
-				}
-			],
-			"example": null
+			"type": "array",
+			"minItems": 0,
+			"items": {
+				"type": "integer",
+				"minimum": 0
+			}
 		}
 	}
 }

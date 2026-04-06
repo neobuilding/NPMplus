@@ -241,6 +241,14 @@
 				}
 			]
 		},
+		"access_list_ids": {
+			"type": "array",
+			"items": { "type": "number" }
+		},
+		"access_list_type": {
+			"type": "string",
+			"enum": ["public", "custom", "global"]
+		},
 		"certificate_files": {
 			"description": "Certificate Files",
 			"content": {
