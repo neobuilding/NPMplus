@@ -146,7 +146,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 					}
 					onSubmit={onSubmit}
 				>
-					{() => (
+					{({ values }: any) => (
 						<Form>
 							<Modal.Header closeButton>
 								<Modal.Title>
