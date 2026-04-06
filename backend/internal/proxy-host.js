@@ -61,7 +61,7 @@ const internalProxyHost = {
 				if (typeof thisData.npmplus_location_config === "undefined") {
 					thisData.npmplus_location_config = "";
 				}
-
+				thisData = internalHost.cleanAccessListTypes(thisData);
 				return proxyHostModel.query().insertAndFetch(thisData).then(utils.omitRow(omissions()));
 			})
 			.then((row) => {
@@ -125,8 +125,7 @@ const internalProxyHost = {
 		if (createCertificate) {
 			delete thisData.certificate_id;
 		}
-		data.access_list_ids = data.access_list_ids || [];
-		data.access_list_type = data.access_list_type || "public";
+
 		return access
 			.can("proxy_hosts:update", thisData.id)
 			.then((/*access_data*/) => {
@@ -186,9 +185,9 @@ const internalProxyHost = {
 					},
 					data,
 				);
-
+				row = internalHost.cleanAccessListTypes(row);
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
-
+				
 				return proxyHostModel
 					.query()
 					.where({ id: thisData.id })

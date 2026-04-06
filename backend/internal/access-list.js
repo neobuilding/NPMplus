@@ -268,16 +268,55 @@ const internalAccessList = {
 		});
 
 		// 2. update any proxy hosts that were using it (ignoring permissions)
-		if (row.proxy_hosts) {
-			await proxyHostModel.query().where("access_list_id", "=", row.id).patch({ access_list_id: 0 });
-
-			// 3. reconfigure those hosts, then reload nginx
-			// set the access_list_id to zero for these items
-			row.proxy_hosts.map((_val, idx) => {
-				row.proxy_hosts[idx].access_list_id = 0;
-				return true;
+		const hosts = await proxyHostModel.query();
+		const affectedHosts = {};
+		hosts.forEach(host => {
+			// check in case something crazy happened. This should never be the case, but safeguard
+			if(!Array.isArray(host.access_list_ids)){
+				host.access_list_ids = [];
+			}
+			const length = host.access_list_ids.length;
+			host.access_list_ids = host.access_list_ids.filter((id: number, _) => id !== row.id);
+			if (!Array.isArray(host.locations)) {
+				host.locations = [];
+			}
+			host.locations.forEach(loc => {
+				if(!Array.isArray(loc.accessListIds)){
+					loc.accessListIds = [];
+				}
+				const locLength = loc.accessListIds.length;
+				loc.accessListIds = loc.accessListIds.filter((id: number, _) => id !== row.id);
+				if(loc.accessListIds.length == 0){
+					loc.accessListType = "global";
+				}
+				if(locLength != loc.accessListIds.length){
+					affectedHosts[host.id] = host;
+				}
 			});
-
+			if(host.access_list_ids.length == 0){
+				host.access_list_type = "public";
+			}
+			if(length != host.access_list_ids.length){
+				affectedHosts[host.id] = host;
+			}
+		});
+		const affectedHostsList = Object.values(affectedHosts);
+		// 3. Write the changes to the database and the config
+		if(affectedHostsList.length > 0){
+			await proxyHostModel.transaction(async trx => {
+				await Promise.all(
+					affectedHostsList.map(host =>
+						proxyHostModel.query(trx).patchAndFetchById(host.id, {
+							access_list_ids: host.access_list_ids,
+							access_list_type: host.access_list_type,
+							locations: host.locations,
+						})
+					)
+				);
+			});
+		
+			row.proxy_hosts = affectedHostsList;
+			
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
 		}
 

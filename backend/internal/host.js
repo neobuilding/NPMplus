@@ -51,7 +51,7 @@ const internalHost = {
 	 * @returns {Object}
 	 */
 	cleanAccessListTypes(row) {
-		if (!row) return row;
+		if (!row) { return row; }
 
 		// ensure array exists
 		if (!Array.isArray(row.access_list_ids)) {
@@ -67,6 +67,14 @@ const internalHost = {
 		// ensure type exists
 		if (!row.access_list_type) {
 			row.access_list_type = "public";
+		}
+
+		if (Array.isArray(row.locations)) {
+			row.locations = row.locations.map((location) => ({
+				...location,
+				accessListIds: Array.isArray(location.accessListIds) ? location.accessListIds : [],
+				accessListType: location.accessListType || "global",
+			}));
 		}
 
 		return row;
