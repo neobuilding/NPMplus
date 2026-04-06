@@ -15,6 +15,22 @@ const omissions = () => {
 	return ["is_deleted"];
 };
 
+const countProxyHost = (hosts: Array, aclId: number) {
+	return hosts.filter(host => {
+		if (Array.isArray(host.access_list_ids) && host.access_list_ids.includes(aclId)) {
+			return true;
+		}
+		if (Array.isArray(host.locations)) {
+			return host.locations.some(loc =>
+				Array.isArray(loc.accessListIds) &&
+				loc.accessListIds.includes(aclId)
+			);
+		}
+		return false;
+	}).length;
+	
+}
+
 const internalAccessList = {
 	/**
 	 * @param   {Access}  access
@@ -206,10 +222,7 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
-			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
-			})
+			.select("access_list.*")
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
@@ -236,6 +249,8 @@ const internalAccessList = {
 		if (typeof data.omit !== "undefined" && data.omit !== null) {
 			row = _.omit(row, data.omit);
 		}
+		const hosts = await proxyHostModel.query();
+		row.proxy_host_count = countProxyHost(hosts,row.id);
 		return row;
 	},
 
@@ -352,10 +367,7 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
-			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
-			})
+			.select("access_list.*")
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")
 			.allowGraph("[owner,items,clients]")
@@ -375,16 +387,19 @@ const internalAccessList = {
 		if (typeof expand !== "undefined" && expand !== null) {
 			query.withGraphFetched(`[${expand.join(", ")}]`);
 		}
-
+		
 		const rows = await query.then(utils.omitRows(omissions()));
 		if (rows) {
-			rows.map((row, idx) => {
+			const hosts = await proxyHostModel.query();
+			rows.forEach((row, idx) => {
+				row.proxy_host_count = countProxyHost(hosts,row.id);
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
 				}
 				return true;
 			});
 		}
+		
 		return rows;
 	},
 
