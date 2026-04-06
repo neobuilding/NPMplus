@@ -15,7 +15,7 @@ const omissions = () => {
 	return ["is_deleted"];
 };
 
-const countProxyHost = (hosts: Array, aclId: number) {
+const countProxyHost = (hosts, aclId) => {
 	return hosts.filter(host => {
 		if (Array.isArray(host.access_list_ids) && host.access_list_ids.includes(aclId)) {
 			return true;
@@ -80,7 +80,7 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.access_list.[clients,items]"],
+				expand: ["owner", "items", "clients", "proxy_hosts"],
 			},
 			true, // skip masking
 		);
@@ -194,7 +194,7 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_list.[clients,items]]"],
+				expand: ["owner", "items", "clients", "proxy_hosts.[certificate]"],
 			},
 			true, // skip masking
 		);
@@ -226,7 +226,7 @@ const internalAccessList = {
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
-			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_list.[clients,items]]]")
+			.allowGraph("[owner,items,clients,proxy_hosts.[certificate]]")
 			.first();
 
 		if (accessData.permission_visibility !== "all") {
@@ -291,7 +291,7 @@ const internalAccessList = {
 				host.access_list_ids = [];
 			}
 			const length = host.access_list_ids.length;
-			host.access_list_ids = host.access_list_ids.filter((id: number, _) => id !== row.id);
+			host.access_list_ids = host.access_list_ids.filter((id) => id !== row.id);
 			if (!Array.isArray(host.locations)) {
 				host.locations = [];
 			}
@@ -300,7 +300,7 @@ const internalAccessList = {
 					loc.accessListIds = [];
 				}
 				const locLength = loc.accessListIds.length;
-				loc.accessListIds = loc.accessListIds.filter((id: number, _) => id !== row.id);
+				loc.accessListIds = loc.accessListIds.filter((id) => id !== row.id);
 				if(loc.accessListIds.length == 0){
 					loc.accessListType = "global";
 				}

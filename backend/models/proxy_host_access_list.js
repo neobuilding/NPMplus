@@ -4,6 +4,7 @@
 import { Model } from "objection";
 import db from "../db.js";
 import ProxyHostModel from "./proxy_host.js";
+import AccessList from "./access_list.js";
 
 Model.knex(db());
 
