@@ -85,7 +85,7 @@ const internalProxyHost = {
 				// re-fetch with cert
 				return internalProxyHost.get(access, {
 					id: row.id,
-					expand: ["certificate", "owner", "access_list.[clients,items]"],
+					expand: ["certificate", "owner"],
 				});
 			})
 			.then((row) => {
@@ -212,7 +212,7 @@ const internalProxyHost = {
 				return internalProxyHost
 					.get(access, {
 						id: thisData.id,
-						expand: ["owner", "certificate", "access_list.[clients,items]"],
+						expand: ["owner", "certificate"],
 					})
 					.then((row) => {
 						if (!row.enabled) {
@@ -268,7 +268,7 @@ const internalProxyHost = {
 				const thisRow = internalHost.cleanRowCertificateMeta(aclRow);
 				// Custom omissions
 				if (typeof thisData.omit !== "undefined" && thisData.omit !== null) {
-					return _.omit(row, thisData.omit);
+					return _.omit(thisRow, thisData.omit);
 				}
 				
 				return thisRow;
@@ -333,7 +333,7 @@ const internalProxyHost = {
 			.then(() => {
 				return internalProxyHost.get(access, {
 					id: data.id,
-					expand: ["certificate", "owner", "access_list"],
+					expand: ["certificate", "owner"],
 				});
 			})
 			.then((row) => {
@@ -455,10 +455,12 @@ const internalProxyHost = {
 		}
 
 		const rows = await query.then(utils.omitRows(omissions()));
+		const aclRows = rows.map((row) => internalHost.cleanAccessListTypes(row));
+
 		if (typeof expand !== "undefined" && expand !== null && expand.indexOf("certificate") !== -1) {
-			return internalHost.cleanAllRowsCertificateMeta(rows);
+			return internalHost.cleanAllRowsCertificateMeta(aclRows);
 		}
-		return rows;
+		return aclRows;
 	},
 
 	/**

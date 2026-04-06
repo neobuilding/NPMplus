@@ -7,7 +7,7 @@ import { convertBoolFieldsToInt, convertIntFieldsToBool } from "../lib/helpers.j
 import AccessListAuth from "./access_list_auth.js";
 import AccessListClient from "./access_list_client.js";
 import now from "./now_helper.js";
-import ProxyHostModel from "./proxy_host.js";
+import ProxyAccessLists from "./proxy_host_access_list.js";
 import User from "./user.js";
 
 Model.knex(db());
@@ -80,15 +80,15 @@ class AccessList extends Model {
 					to: "access_list_client.access_list_id",
 				},
 			},
-			proxy_hosts: {
+			access_lists: {
 				relation: Model.HasManyRelation,
-				modelClass: ProxyHostModel,
+				modelClass: ProxyAccessLists,
 				join: {
 					from: "access_list.id",
-					to: "proxy_host.access_list_id",
+					to: "proxy_host_access_list.access_list_id",
 				},
 				modify: (qb) => {
-					qb.where("proxy_host.is_deleted", 0);
+					qb.where("proxy_host_access_list.proxy_host_id.is_deleted", 0);
 				},
 			},
 		};

@@ -4,7 +4,7 @@
 import { Model } from "objection";
 import db from "../db.js";
 import { castJsonIfNeed, convertBoolFieldsToInt, convertIntFieldsToBool } from "../lib/helpers.js";
-import AccessList from "./access_list.js";
+import ProxyAccessLists from "./proxy_host_access_list.js";
 import Certificate from "./certificate.js";
 import now from "./now_helper.js";
 import User from "./user.js";
@@ -84,7 +84,7 @@ class ProxyHost extends Model {
 	}
 
 	static get defaultAllowGraph() {
-		return "[owner,access_list.[clients,items],certificate]";
+		return "[owner,access_lists.[clients,items],certificate]";
 	}
 
 	static get defaultExpand() {
@@ -110,13 +110,13 @@ class ProxyHost extends Model {
 			},
 			access_lists: {
 				relation: Model.HasManyRelation,
-				modelClass: AccessList,
+				modelClass: ProxyAccessLists,
 				join: {
-					from: "proxy_host.access_list_ids",
-					to: "access_list.id",
+					from: "proxy_host.id",
+					to: "proxy_host_access_list.proxy_host_id",
 				},
 				modify: (qb) => {
-					qb.where("access_list.is_deleted", 0);
+					qb.where("proxy_host_access_list.access_list_id.is_deleted", 0);
 				},
 			},
 			certificate: {
