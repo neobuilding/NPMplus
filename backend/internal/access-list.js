@@ -15,7 +15,7 @@ const omissions = () => {
 	return ["is_deleted"];
 };
 
-const countProxyHost = (hosts, aclId) => {
+const getProxyHostsForAccessList = (hosts, aclId) => {
 	return hosts.filter(host => {
 		if (Array.isArray(host.access_list_ids) && host.access_list_ids.includes(aclId)) {
 			return true;
@@ -27,8 +27,7 @@ const countProxyHost = (hosts, aclId) => {
 			);
 		}
 		return false;
-	}).length;
-	
+	});
 }
 
 const internalAccessList = {
@@ -80,15 +79,17 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts"],
+				expand: ["owner", "items", "clients"],
 			},
 			true, // skip masking
 		);
-
+		const hosts = await proxyHostModel.query();
+		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts,freshRow.id);
+		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
 		// Audit log
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
-
+		
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
@@ -194,11 +195,13 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.[certificate]"],
+				expand: ["owner", "items", "clients"],
 			},
 			true, // skip masking
 		);
-
+		const hosts = await proxyHostModel.query();
+		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts,freshRow.id);
+		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
@@ -226,7 +229,7 @@ const internalAccessList = {
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
-			.allowGraph("[owner,items,clients,proxy_hosts.[certificate]]")
+			.allowGraph("[owner,items,clients]")
 			.first();
 
 		if (accessData.permission_visibility !== "all") {
@@ -250,7 +253,8 @@ const internalAccessList = {
 			row = _.omit(row, data.omit);
 		}
 		const hosts = await proxyHostModel.query();
-		row.proxy_host_count = countProxyHost(hosts,row.id);
+		row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
+		row.proxy_host_count = row.proxy_hosts.length;
 		return row;
 	},
 
@@ -265,13 +269,12 @@ const internalAccessList = {
 		await access.can("access_lists:delete", data.id);
 		const row = await internalAccessList.get(access, {
 			id: data.id,
-			expand: ["proxy_hosts", "items", "clients"],
+			expand: ["items", "clients"],
 		});
 
 		if (!row?.id) {
 			throw new errs.ItemNotFoundError(data.id);
 		}
-
 		// 1. update row to be deleted
 		// 2. update any proxy hosts that were using it (ignoring permissions)
 		// 3. reconfigure those hosts
@@ -284,6 +287,7 @@ const internalAccessList = {
 
 		// 2. update any proxy hosts that were using it (ignoring permissions)
 		const hosts = await proxyHostModel.query();
+
 		const affectedHosts = {};
 		hosts.forEach(host => {
 			// check in case something crazy happened. This should never be the case, but safeguard
@@ -293,7 +297,7 @@ const internalAccessList = {
 			const length = host.access_list_ids.length;
 			host.access_list_ids = host.access_list_ids.filter((id) => id !== row.id);
 			if (!Array.isArray(host.locations)) {
-				host.locations = [];
+				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
 			}
 			host.locations.forEach(loc => {
 				if(!Array.isArray(loc.accessListIds)){
@@ -333,6 +337,8 @@ const internalAccessList = {
 			row.proxy_hosts = affectedHostsList;
 			
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
+		}else{
+			row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
 		}
 
 		await internalNginx.reload();
@@ -343,7 +349,7 @@ const internalAccessList = {
 		} catch {
 			// do nothing
 		}
-
+		
 		// 4. audit log
 		await internalAuditLog.add(access, {
 			action: "deleted",
@@ -392,7 +398,8 @@ const internalAccessList = {
 		if (rows) {
 			const hosts = await proxyHostModel.query();
 			rows.forEach((row, idx) => {
-				row.proxy_host_count = countProxyHost(hosts,row.id);
+				row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
+				row.proxy_host_count = row.proxy_hosts.length;
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
 				}

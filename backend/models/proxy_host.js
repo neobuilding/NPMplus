@@ -84,7 +84,7 @@ class ProxyHost extends Model {
 	}
 
 	static get defaultAllowGraph() {
-		return "[owner,access_lists.[clients,items],certificate]";
+		return "[owner,certificate]";
 	}
 
 	static get defaultExpand() {
@@ -106,6 +106,14 @@ class ProxyHost extends Model {
 				},
 				modify: (qb) => {
 					qb.where("user.is_deleted", 0);
+				},
+			},
+			access_list: {
+				relation: Model.HasManyRelation,
+				modelClass: ProxyAccessLists,
+				join: {
+					from: "proxy_host.id",
+					to: "proxy_host_access_list.proxy_host_id",
 				},
 			},
 			access_lists: {
