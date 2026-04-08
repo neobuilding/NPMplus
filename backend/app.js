@@ -11,7 +11,7 @@ import mainRoutes from "./routes/main.js";
 const app = express();
 
 app.enable("trust proxy");
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
 	req.headers["x-forwarded-for"] = req.header("x-real-ip");
 	return next();
 });

@@ -248,7 +248,7 @@ const internalCertificate = {
 		}
 
 		const row = await query.then(utils.omitRow(omissions()));
-		if (!row || !row.id) {
+		if (!row?.id) {
 			throw new error.ItemNotFoundError(data.id);
 		}
 		// Custom omissions
@@ -346,7 +346,7 @@ const internalCertificate = {
 		await access.can("certificates:delete", data.id);
 		const row = await internalCertificate.get(access, { id: data.id });
 
-		if (!row || !row.id) {
+		if (!row?.id) {
 			throw new error.ItemNotFoundError(data.id);
 		}
 

@@ -156,8 +156,7 @@ router
 	 */
 	.post(async (req, res, next) => {
 		if (
-			!req.files ||
-			!req.files.certificate ||
+			!req.files?.certificate ||
 			Object.keys(req.files).some((name) => name !== "certificate" && name !== "certificate_key")
 		) {
 			res.status(400).send({ error: "only certificate and certificate_key files are allowed" });
@@ -259,8 +258,7 @@ router
 	 */
 	.post(async (req, res, next) => {
 		if (
-			!req.files ||
-			!req.files.certificate ||
+			!req.files?.certificate ||
 			Object.keys(req.files).some((name) => name !== "certificate" && name !== "certificate_key")
 		) {
 			res.status(400).send({ error: "only certificate and certificate_key files are allowed" });
