@@ -471,7 +471,7 @@
 		"defaultMessage": "Send noindex header and block some user agents"
 	},
 	"host.flags.upstream-compression": {
-		"defaultMessage": "Enable compression by upstream"
+		"defaultMessage": "Enable compression by upstream, not recommended"
 	},
 	"host.flags.websockets-upgrade": {
 		"defaultMessage": "Websockets Support"
