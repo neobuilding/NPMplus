@@ -332,6 +332,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														initialAccessListType={data.accessListType || "public"} 
 														initialAccessListIds={data?.accessListIds || []} 
 														name="accessListIds"
+														type="accessListType"
 													/>
 												</div>
 												<div className="my-3">

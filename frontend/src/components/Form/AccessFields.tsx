@@ -12,32 +12,37 @@ interface Props {
 	initialAccessListType: ProxyLocation["accessListType"];
 	initialAccessListIds: number[];
 	name: string;
+	type: string;
 }
 
-interface AccessOption {
-	readonly value: number;
+
+interface BaseOption {
 	readonly label: string;
 	readonly subLabel: string;
+}
+interface AccessOption extends BaseOption{
+	readonly value: number;
 	readonly meta: AccessList;
 }
 
-interface AccessTypeOption {
-	readonly label: string;
+interface AccessTypeOption extends BaseOption {
 	readonly type: ProxyLocation["accessListType"];
-	readonly subLabel: string;
 	readonly icon?: ReactNode;
-
 }
+
+const OptionContent = (label: string, subLabel: string, icon?: ReactNode) => (
+	<div className="flex-fill">
+		<div className="font-weight-medium">
+			{icon}<strong>{label}</strong>
+		</div>
+		<div className="text-secondary mt-1 ps-3">{subLabel}</div>
+	</div>
+);
 
 const Option = (props: OptionProps<AccessOption>) => {
 	return (
 		<components.Option {...props}>
-			<div className="flex-fill">
-				<div className="font-weight-medium">
-					<strong>{props.data.label}</strong>
-				</div>
-				<div className="text-secondary mt-1 ps-3">{props.data.subLabel}</div>
-			</div>
+			{OptionContent(props.data.label, props.data.subLabel)}
 		</components.Option>
 	);
 };
@@ -45,17 +50,12 @@ const Option = (props: OptionProps<AccessOption>) => {
 const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 	return (
 		<components.Option {...props}>
-			<div className="flex-fill">
-				<div className="font-weight-medium">
-					{props.data.icon}<strong>{props.data.label}</strong>
-				</div>
-				<div className="text-secondary mt-1 ps-3">{props.data.subLabel}</div>
-			</div>
+			{OptionContent(props.data.label, props.data.subLabel, props.data.icon)}
 		</components.Option>
 	);
 };
 
-export function AccessFields({ initialAccessListType, location, initialAccessListIds, name }: Props) {
+export function AccessFields({ initialAccessListType, location, initialAccessListIds, name, type }: Props) {
 
 	const [values, setValues] = useState(initialAccessListIds || []);
 	const [aclValue, setAclValue] = useState(initialAccessListType);
@@ -180,7 +180,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				<div className="col-md-10">
 					<div className="input-group mb-3">
 						<Select<AccessTypeOption, false>
-							className="react-select-container"
+							className="react-select-container col-md-8"
 							classNamePrefix="react-select"
 							isSearchable={false}
 							defaultValue={createOption(initialAccessListType)}
@@ -196,7 +196,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								if (!e || Array.isArray(e)) return;
 								const value = e.type;
 								setAclValue(value);
-								setFieldValue("accessListType", value);
+								setFieldValue(type, value);
 							}}
 						/>
 					</div>
@@ -207,7 +207,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 					{values.map((item: number, idx: number) => (
 						<div key={item ?? idx} className="input-group mb-3">
 							<Select<AccessOption, false>
-								className="react-select-container"
+								className="react-select-container col-md-8 my-3"
 								classNamePrefix="react-select"
 								value={defaultOptions.find((o) => o.value === item) || findFirstAvailableOption()}
 								options={options}
@@ -252,7 +252,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							}
 							<a
 								role="button"
-								className="btn btn-ghost btn-danger p-0"
+								className="btn btn-ghost btn-danger p-0 my-3"
 								onClick={(e) => {
 									e.preventDefault();
 									handleRemove(item);

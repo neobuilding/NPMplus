@@ -215,6 +215,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									location={item.path}  
 									initialAccessListIds={item?.accessListIds || []}
 									name={`locations[${idx}].accessListIds`}
+									type={`locations[${idx}].accessListType`}
 								/>
 							</div>
 							<div className="my-3">
