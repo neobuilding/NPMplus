@@ -4,7 +4,7 @@
 import { Model } from "objection";
 import db from "../db.js";
 import { castJsonIfNeed, convertBoolFieldsToInt, convertIntFieldsToBool } from "../lib/helpers.js";
-import ProxyAccessLists from "./proxy_host_access_list.js";
+import AccessList from "./access_list.js";
 import Certificate from "./certificate.js";
 import now from "./now_helper.js";
 import User from "./user.js";
@@ -109,14 +109,18 @@ class ProxyHost extends Model {
 				},
 			},
 			access_lists: {
-				relation: Model.HasManyRelation,
-				modelClass: ProxyAccessLists,
+				relation: Model.ManyToManyRelation,
+				modelClass: AccessList,
 				join: {
 					from: "proxy_host.id",
-					to: "proxy_host_access_list.proxy_host_id",
+					through: {
+						from: "proxy_host_access_list.proxy_host_id",
+						to: "proxy_host_access_list.access_list_id",
+					},
+					to: "access_list.id",
 				},
 				modify: (qb) => {
-					qb.where("proxy_host_access_list.access_list_id.is_deleted", 0);
+					qb.where("access_list.is_deleted", 0);
 				},
 			},
 			certificate: {

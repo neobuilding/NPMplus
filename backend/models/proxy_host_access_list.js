@@ -8,12 +8,7 @@ import AccessList from "./access_list.js";
 
 Model.knex(db());
 
-class ProxyAccessLists extends Model {
-	$beforeInsert() {
-	}
-
-	$beforeUpdate() {
-	}
+class ProxyHostAccessList extends Model {
 
 	static get name() {
 		return "ProxyHostAccessList";
@@ -23,14 +18,10 @@ class ProxyAccessLists extends Model {
 		return "proxy_host_access_list";
 	}
 
-	static get jsonAttributes() {
-		return ["meta"];
-	}
-
 	static get relationMappings() {
 		return {
-			access_lists: {
-				relation: Model.HasManyRelation,
+			access_list: {
+				relation: Model.BelongsToOneRelation,
 				modelClass: AccessList,
 				join: {
 					from: "proxy_host_access_list.access_list_id",
@@ -40,8 +31,8 @@ class ProxyAccessLists extends Model {
 					qb.where("access_list.is_deleted", 0);
 				},
 			},
-			proxy_hosts: {
-				relation: Model.HasManyRelation,
+			proxy_host: {
+				relation: Model.BelongsToOneRelation,
 				modelClass: ProxyHostModel,
 				join: {
 					from: "proxy_host_access_list.proxy_host_id",
@@ -55,4 +46,4 @@ class ProxyAccessLists extends Model {
 	}
 }
 
-export default ProxyAccessLists;
+export default ProxyHostAccessList;
