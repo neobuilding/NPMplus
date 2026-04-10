@@ -465,7 +465,7 @@ const internalUser = {
 
 					return internalToken
 						.getTokenFromEmail({
-							identity: user.email,
+							identity: user.email.toLowerCase().trim(),
 							secret: data.current,
 						})
 						.then(() => {
