@@ -259,7 +259,7 @@
 				"public",
 				"custom"
 			]
-		}
+		},
 		"certificate_files": {
 			"description": "Certificate Files",
 			"content": {
