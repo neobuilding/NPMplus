@@ -70,11 +70,19 @@ const internalHost = {
 		}
 
 		if (Array.isArray(row.locations)) {
-			row.locations = row.locations.map((location) => ({
-				...location,
-				accessListIds: Array.isArray(location.accessListIds) ? location.accessListIds : [],
-				accessListType: location.accessListType || "global",
-			}));
+			// handle both snake and camel case
+			row.locations = row.locations.map((location) => {
+				const accessListIds = Array.isArray(location.accessListIds)
+					? location.accessListIds
+					: Array.isArray(location.access_list_ids)
+						? location.access_list_ids : [];
+				const accessListType = location.accessListType || location.access_list_type || "global";
+				return {
+					...location,
+					accessListIds,
+					accessListType,
+				};
+			});
 		}
 
 		return row;

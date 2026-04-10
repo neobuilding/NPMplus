@@ -245,10 +245,21 @@
 			"type": "array",
 			"items": { "type": "number" }
 		},
-		"access_list_type": {
+		"host_access_list_type": {
 			"type": "string",
-			"enum": ["public", "custom", "global"]
+			"enum": [
+				"public",
+				"custom"
+			]
 		},
+		"location_access_list_type": {
+			"type": "string",
+			"enum": [
+				"global",
+				"public",
+				"custom"
+			]
+		}
 		"certificate_files": {
 			"description": "Certificate Files",
 			"content": {

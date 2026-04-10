@@ -69,7 +69,7 @@
 			"$ref": "../common.json#/properties/access_list_ids"
 		},
 		"access_list_type": {
-			"$ref": "../common.json#/properties/access_list_type"
+			"$ref": "../common.json#/properties/host_access_list_type"
 		},
 		"certificate_id": {
 			"$ref": "../common.json#/properties/certificate_id"
@@ -260,7 +260,7 @@
 						"$ref": "../common.json#/properties/access_list_ids"
 					},
 					"access_list_type": {
-						"$ref": "../common.json#/properties/access_list_type"
+						"$ref": "../common.json#/properties/location_access_list_type"
 					}
 				}
 			},
