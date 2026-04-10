@@ -79,17 +79,17 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients"],
+				expand: ["owner", "items", "clients", "proxy_hosts.access_list.[clients,items]"],
 			},
 			true, // skip masking
 		);
 		const hosts = await proxyHostModel.query();
-		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts,freshRow.id);
+		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts, freshRow.id);
 		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
 		// Audit log
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
-		
+
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
@@ -195,12 +195,12 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients"],
+				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_list.[clients,items]]"],
 			},
 			true, // skip masking
 		);
 		const hosts = await proxyHostModel.query();
-		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts,freshRow.id);
+		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts, freshRow.id);
 		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
@@ -229,7 +229,7 @@ const internalAccessList = {
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
-			.allowGraph("[owner,items,clients]")
+			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_list.[clients,items]]]")
 			.first();
 
 		if (accessData.permission_visibility !== "all") {
@@ -253,7 +253,7 @@ const internalAccessList = {
 			row = _.omit(row, data.omit);
 		}
 		const hosts = await proxyHostModel.query();
-		row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
+		row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
 		row.proxy_host_count = row.proxy_hosts.length;
 		return row;
 	},
@@ -291,7 +291,7 @@ const internalAccessList = {
 		const affectedHosts = {};
 		hosts.forEach(host => {
 			// check in case something crazy happened. This should never be the case, but safeguard
-			if(!Array.isArray(host.access_list_ids)){
+			if (!Array.isArray(host.access_list_ids)) {
 				host.access_list_ids = [];
 			}
 			const length = host.access_list_ids.length;
@@ -300,28 +300,28 @@ const internalAccessList = {
 				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
 			}
 			host.locations.forEach(loc => {
-				if(!Array.isArray(loc.accessListIds)){
+				if (!Array.isArray(loc.accessListIds)) {
 					loc.accessListIds = [];
 				}
 				const locLength = loc.accessListIds.length;
 				loc.accessListIds = loc.accessListIds.filter((id) => id !== row.id);
-				if(loc.accessListIds.length == 0){
+				if (loc.accessListIds.length == 0) {
 					loc.accessListType = "global";
 				}
-				if(locLength != loc.accessListIds.length){
+				if (locLength != loc.accessListIds.length) {
 					affectedHosts[host.id] = host;
 				}
 			});
-			if(host.access_list_ids.length == 0){
+			if (host.access_list_ids.length == 0) {
 				host.access_list_type = "public";
 			}
-			if(length != host.access_list_ids.length){
+			if (length != host.access_list_ids.length) {
 				affectedHosts[host.id] = host;
 			}
 		});
 		const affectedHostsList = Object.values(affectedHosts);
 		// 3. Write the changes to the database and the config
-		if(affectedHostsList.length > 0){
+		if (affectedHostsList.length > 0) {
 			await proxyHostModel.transaction(async trx => {
 				await Promise.all(
 					affectedHostsList.map(host =>
@@ -333,12 +333,12 @@ const internalAccessList = {
 					)
 				);
 			});
-		
+
 			row.proxy_hosts = affectedHostsList;
-			
+
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
-		}else{
-			row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
+		} else {
+			row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
 		}
 
 		await internalNginx.reload();
@@ -349,7 +349,7 @@ const internalAccessList = {
 		} catch {
 			// do nothing
 		}
-		
+
 		// 4. audit log
 		await internalAuditLog.add(access, {
 			action: "deleted",
@@ -393,12 +393,12 @@ const internalAccessList = {
 		if (typeof expand !== "undefined" && expand !== null) {
 			query.withGraphFetched(`[${expand.join(", ")}]`);
 		}
-		
+
 		const rows = await query.then(utils.omitRows(omissions()));
 		if (rows) {
 			const hosts = await proxyHostModel.query();
 			rows.forEach((row, idx) => {
-				row.proxy_hosts = getProxyHostsForAccessList(hosts,row.id);
+				row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
 				row.proxy_host_count = row.proxy_hosts.length;
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
@@ -406,7 +406,7 @@ const internalAccessList = {
 				return true;
 			});
 		}
-		
+
 		return rows;
 	},
 

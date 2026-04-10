@@ -85,7 +85,7 @@ const internalProxyHost = {
 				// re-fetch with cert
 				return internalProxyHost.get(access, {
 					id: row.id,
-					expand: ["certificate", "owner"],
+					expand: ["certificate", "owner", "access_lists.[clients,items]"],
 				});
 			})
 			.then((row) => {
@@ -211,7 +211,7 @@ const internalProxyHost = {
 				return internalProxyHost
 					.get(access, {
 						id: thisData.id,
-						expand: ["owner", "certificate"],
+						expand: ["owner", "certificate", "access_lists.[clients,items]"],
 					})
 					.then((row) => {
 						if (!row.enabled) {
@@ -332,7 +332,7 @@ const internalProxyHost = {
 			.then(() => {
 				return internalProxyHost.get(access, {
 					id: data.id,
-					expand: ["certificate", "owner"],
+					expand: ["certificate", "owner", "access_lists.[clients,items]"],
 				});
 			})
 			.then((row) => {
