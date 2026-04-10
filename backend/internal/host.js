@@ -68,10 +68,17 @@ const internalHost = {
 		if (!row.access_list_type) {
 			row.access_list_type = "public";
 		}
-
+		
 		if (Array.isArray(row.locations)) {
+			// generate the ids for a location (this is only used for the htpasswd file tracking with multi acls)
+			const existingIds = row.locations.map((location) => location.id).filter((id) => Number.isInteger(id));
+			let count = existingIds.length ? Math.max(...existingIds) + 1 : 0;
 			// handle both snake and camel case
 			row.locations = row.locations.map((location) => {
+				if(!Number.isInteger(location.id)){
+					location.id = count++;
+				}
+				
 				const accessListIds = Array.isArray(location.accessListIds)
 					? location.accessListIds
 					: Array.isArray(location.access_list_ids)

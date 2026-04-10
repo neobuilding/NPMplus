@@ -114,6 +114,7 @@ export interface ProxyLocation {
 	npmplusAuthRequest: string;
 	accessLists?: AccessList[];
 	accessListType: ProxyHost["accessListType"] | "global";
+	id?: number | null;
 }
 
 export interface ProxyHost {

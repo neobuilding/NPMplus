@@ -64,7 +64,9 @@ const up = async (knex) => {
 					accessListIds: Array.isArray(loc.accessListIds) ? loc.accessListIds : [],
 					accessListType: loc.accessListType ?? "global",
 				}));
+				let count = 0;
 				migratedLocations.forEach(location => {
+					location.id = count++;
 					if (Array.isArray(location.accessListIds)) {
 						location.accessListIds.forEach(aclId => {
 							acl_hosts[row.id + "_" + aclId] = {

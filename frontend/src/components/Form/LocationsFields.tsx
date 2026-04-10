@@ -37,7 +37,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
-		accessListType: "global"
+		accessListType: "global",
+		id: null
 	};
 
 	const toggleAdvVisible = (idx: number) => {
@@ -45,7 +46,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 	};
 
 	const handleAdd = () => {
-		setValues([...values, blankItem]);
+		setValues([...values, { ...blankItem }]);
 	};
 
 	const handleRemove = (idx: number) => {
