@@ -10,25 +10,11 @@ import accessListClientModel from "../models/access_list_client.js";
 import proxyHostModel from "../models/proxy_host.js";
 import internalAuditLog from "./audit-log.js";
 import internalNginx from "./nginx.js";
+import internalProxyHostAccessList from "./proxy-host-access-list.js";
 
 const omissions = () => {
 	return ["is_deleted"];
 };
-
-const getProxyHostsForAccessList = (hosts, aclId) => {
-	return hosts.filter(host => {
-		if (Array.isArray(host.access_list_ids) && host.access_list_ids.includes(aclId)) {
-			return true;
-		}
-		if (Array.isArray(host.locations)) {
-			return host.locations.some(loc =>
-				Array.isArray(loc.accessListIds) &&
-				loc.accessListIds.includes(aclId)
-			);
-		}
-		return false;
-	});
-}
 
 const internalAccessList = {
 	/**
@@ -79,13 +65,11 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.access_list.[clients,items]"],
+				expand: ["owner", "items", "clients", "proxy_hosts.access_lists.[clients,items]"],
 			},
 			true, // skip masking
 		);
-		const hosts = await proxyHostModel.query();
-		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts, freshRow.id);
-		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
+
 		// Audit log
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
@@ -195,13 +179,11 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_list.[clients,items]]"],
+				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_lists.[clients,items]]"],
 			},
 			true, // skip masking
 		);
-		const hosts = await proxyHostModel.query();
-		freshRow.proxy_hosts = getProxyHostsForAccessList(hosts, freshRow.id);
-		freshRow.proxy_host_count = freshRow.proxy_hosts.length;
+
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
@@ -225,14 +207,15 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.select("access_list.*", accessListModel.raw("COUNT(proxy_host_access_list.proxy_host_id) as proxy_host_count"))
+			.leftJoin("proxy_host_access_list", "proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
-			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_list.[clients,items]]]")
+			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_lists.[clients,items]]]")
 			.first();
 
 		if (accessData.permission_visibility !== "all") {
@@ -255,9 +238,7 @@ const internalAccessList = {
 		if (typeof data.omit !== "undefined" && data.omit !== null) {
 			row = _.omit(row, data.omit);
 		}
-		const hosts = await proxyHostModel.query();
-		row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
-		row.proxy_host_count = row.proxy_hosts.length;
+
 		return row;
 	},
 
@@ -289,59 +270,53 @@ const internalAccessList = {
 		});
 
 		// 2. update any proxy hosts that were using it (ignoring permissions)
-		const hosts = await proxyHostModel.query();
-
-		const affectedHosts = {};
-		hosts.forEach(host => {
+		const affectedHosts = (row.proxy_hosts || []).map((host) => {
+			const updatedHost = { ...host };
 			// check in case something crazy happened. This should never be the case, but safeguard
-			if (!Array.isArray(host.access_list_ids)) {
-				host.access_list_ids = [];
+			if (!Array.isArray(updatedHost.access_list_ids)) {
+				updatedHost.access_list_ids = [];
 			}
-			const length = host.access_list_ids.length;
-			host.access_list_ids = host.access_list_ids.filter((id) => id !== row.id);
-			if (!Array.isArray(host.locations)) {
+			updatedHost.access_list_ids = updatedHost.access_list_ids.filter((id) => id !== row.id);
+			if (updatedHost.access_list_ids.length === 0) {
+				updatedHost.access_list_type = "public";
+			}
+			if (!Array.isArray(updatedHost.locations)) {
 				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
 			}
-			host.locations.forEach(loc => {
-				if (!Array.isArray(loc.accessListIds)) {
-					loc.accessListIds = [];
+			updatedHost.locations = updatedHost.locations.map((location) => {
+				const updatedLocation = { ...location };
+				if (!Array.isArray(updatedLocation.accessListIds)) {
+					updatedLocation.accessListIds = [];
 				}
-				const locLength = loc.accessListIds.length;
-				loc.accessListIds = loc.accessListIds.filter((id) => id !== row.id);
-				if (loc.accessListIds.length == 0) {
-					loc.accessListType = "global";
+				updatedLocation.accessListIds = updatedLocation.accessListIds.filter((id) => id !== row.id);
+				if (updatedLocation.accessListIds.length === 0) {
+					updatedLocation.accessListType = "global";
 				}
-				if (locLength != loc.accessListIds.length) {
-					affectedHosts[host.id] = host;
-				}
+				return updatedLocation;
 			});
-			if (host.access_list_ids.length == 0) {
-				host.access_list_type = "public";
-			}
-			if (length != host.access_list_ids.length) {
-				affectedHosts[host.id] = host;
-			}
+			return updatedHost;
 		});
-		const affectedHostsList = Object.values(affectedHosts);
 		// 3. Write the changes to the database and the config
-		if (affectedHostsList.length > 0) {
-			await proxyHostModel.transaction(async trx => {
+		if (affectedHosts.length > 0) {
+			await proxyHostModel.transaction(async (trx) => {
 				await Promise.all(
-					affectedHostsList.map(host =>
-						proxyHostModel.query(trx).patchAndFetchById(host.id, {
-							access_list_ids: host.access_list_ids,
-							access_list_type: host.access_list_type,
-							locations: host.locations,
-						})
-					)
+					affectedHosts.map((host) => {
+						return proxyHostModel.query(trx)
+							.patchAndFetchById(host.id, {
+								access_list_ids: host.access_list_ids,
+								access_list_type: host.access_list_type,
+								locations: host.locations,
+							})
+							.then(() => {
+								return internalProxyHostAccessList.syncAccessListRelations(trx, host.id, host);
+							});
+					}),
 				);
 			});
 
-			row.proxy_hosts = affectedHostsList;
+			row.proxy_hosts = affectedHosts;
 
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
-		} else {
-			row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
 		}
 
 		await internalNginx.reload();
@@ -376,9 +351,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.select("access_list.*", accessListModel.raw("COUNT(proxy_host_access_list.proxy_host_id) as proxy_host_count"))
+			.leftJoin("proxy_host_access_list", "proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")
@@ -402,17 +378,13 @@ const internalAccessList = {
 
 		const rows = await query.then(utils.omitRows(omissions()));
 		if (rows) {
-			const hosts = await proxyHostModel.query();
 			rows.forEach((row, idx) => {
-				row.proxy_hosts = getProxyHostsForAccessList(hosts, row.id);
-				row.proxy_host_count = row.proxy_hosts.length;
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
 				}
 				return true;
 			});
 		}
-
 		return rows;
 	},
 

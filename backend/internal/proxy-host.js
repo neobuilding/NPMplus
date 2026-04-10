@@ -7,10 +7,12 @@ import internalAuditLog from "./audit-log.js";
 import internalCertificate from "./certificate.js";
 import internalHost from "./host.js";
 import internalNginx from "./nginx.js";
+import internalProxyHostAccessList from "./proxy-host-access-list.js";
 
 const omissions = () => {
 	return ["is_deleted", "owner.is_deleted"];
 };
+
 
 const internalProxyHost = {
 	/**
@@ -62,7 +64,16 @@ const internalProxyHost = {
 					thisData.npmplus_location_config = "";
 				}
 				thisData = internalHost.cleanAccessListTypes(thisData);
-				return proxyHostModel.query().insertAndFetch(thisData).then(utils.omitRow(omissions()));
+				return proxyHostModel.transaction(async (trx) => {
+					const row = await proxyHostModel.query(trx).insertAndFetch(thisData);
+
+					const relationRows = internalProxyHostAccessList.getAccessListRelationRows(row.id, thisData);
+					if (relationRows.length > 0) {
+						await trx("proxy_host_access_list").insert(relationRows);
+					}
+
+					return row;
+				}).then(utils.omitRow(omissions()));
 			})
 			.then((row) => {
 				if (createCertificate) {
@@ -185,13 +196,20 @@ const internalProxyHost = {
 					},
 					data,
 				);
-				row = internalHost.cleanAccessListTypes(row);
-				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
 				
+				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
+				thisData = internalHost.cleanAccessListTypes(thisData);
 				return proxyHostModel
-					.query()
-					.where({ id: thisData.id })
-					.patch(thisData)
+					.transaction(async (trx) => {
+						return proxyHostModel
+							.query(trx)
+							.where({ id: thisData.id })
+							.patch(thisData)
+							.then((patchResult) => {
+								return internalProxyHostAccessList.syncAccessListRelations(trx, thisData.id, thisData)
+									.then(() => { return patchResult });
+							});
+					})
 					.then(utils.omitRow(omissions()))
 					.then((saved_row) => {
 						// Add to audit log
@@ -293,10 +311,19 @@ const internalProxyHost = {
 				}
 
 				return proxyHostModel
-					.query()
-					.where("id", row.id)
-					.patch({
-						is_deleted: 1,
+					.transaction((trx) => {
+						return proxyHostModel
+							.query(trx)
+							.where("id", row.id)
+							.patch({
+								is_deleted: 1,
+							})
+							.then((patchResult) => {
+								return trx("proxy_host_access_list")
+									.where("proxy_host_id", row.id)
+									.delete()
+									.then(() => patchResult);
+							});
 					})
 					.then(() => {
 						// Delete Nginx Config
