@@ -225,7 +225,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*")
+			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.leftJoin("proxy_host", function () {
+				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+			})
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
@@ -269,7 +272,7 @@ const internalAccessList = {
 		await access.can("access_lists:delete", data.id);
 		const row = await internalAccessList.get(access, {
 			id: data.id,
-			expand: ["items", "clients"],
+			expand: ["proxy_hosts", "items", "clients"],
 		});
 
 		if (!row?.id) {
@@ -373,7 +376,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*")
+			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.leftJoin("proxy_host", function () {
+				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+			})
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")
 			.allowGraph("[owner,items,clients]")
