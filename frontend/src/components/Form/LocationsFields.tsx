@@ -58,7 +58,9 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 	};
 
 	const handleAdd = () => {
-		setValues([...values, createUiLocation(blankItem)]);
+		const newValues = [...values, createUiLocation(blankItem)];
+		setValues(newValues);
+		setFormField(newValues);
 	};
 
 	const handleRemove = (idx: number) => {
