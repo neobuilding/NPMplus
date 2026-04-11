@@ -257,9 +257,12 @@ const internalNginx = {
 		if (host.domain_names) {
 			host.server_names = host.domain_names.map((domain_name) => domainToASCII(domain_name) || domain_name);
 		}
-
+		const hostAccessLists = Array.isArray(host.access_lists) ? host.access_lists : [];
+		if (host.access_list_type === "custom") {
+			host.access_list = internalProxyHostAccessList.buildAclFile(hostAccessLists);
+		}
 		const hostHtpasswdFileName = internalProxyHostAccessList.getHostFileName(host);
-		if(hostHtpasswdFileName.length > 0){
+		if (hostHtpasswdFileName.length > 0) {
 			host.filename = hostHtpasswdFileName;
 		}
 
@@ -267,8 +270,15 @@ const internalNginx = {
 
 		if (host.locations) {
 			_.map(host.locations, (location) => {
+
+				if (location.access_list_type === "global") {
+					location.access_list = host.access_list;
+				} else if (location.access_list_type === "custom") {
+					location.access_list = internalProxyHostAccessList.buildAclFile(location.access_lists || []);
+				}
+
 				const htpasswdFileName = internalProxyHostAccessList.getLocationFileName(host, location);
-				if(htpasswdFileName.length > 0){
+				if (htpasswdFileName.length > 0) {
 					location.filename = htpasswdFileName;
 				}
 				if (location.npmplus_auth_request === "anubis") {

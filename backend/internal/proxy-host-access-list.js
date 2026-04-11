@@ -5,80 +5,6 @@ import internalAccessList from "./access-list.js";
 
 const GENERATED_DIR = "/data/access";
 
-/**
- * 
- * @param {*} proxyHostId 
- * @param {*} data 
- * @returns 
- */
-const getAccessListRelationRows = (proxyHostId, data) => {
-    const relationIds = new Set();
-
-    // perform data sanitisation
-    if (data.access_list_type === "custom" && Array.isArray(data.access_list_ids)) {
-        data.access_list_ids.forEach((id) => {
-            if (Number.isInteger(id)) {
-                relationIds.add(id);
-            }
-        });
-    }
-
-    // since locations is stored as a json, extract it and flatten it to store in the join table
-    if (Array.isArray(data.locations)) {
-        data.locations.forEach((location) => {
-            if (location.access_list_type === "custom" && Array.isArray(location.access_list_ids)) {
-                location.access_list_ids.forEach((id) => {
-                    if (Number.isInteger(id)) {
-                        relationIds.add(id);
-                    }
-                });
-            }
-        });
-    }
-    // now map the acls to proxy hosts
-    return Array.from(relationIds).map((access_list_id) => ({
-        proxy_host_id: proxyHostId,
-        access_list_id,
-    }));
-};
-
-/**
- * 
- * @param {*} trx 
- * @param {*} proxyHostId 
- * @param {*} data 
- */
-const syncAccessListRelations = async (trx, proxyHostId, data) => {
-    const desiredRows = getAccessListRelationRows(proxyHostId, data);
-    const desiredIds = new Set(desiredRows.map((row) => row.access_list_id));
-
-    const existingRows = await trx("proxy_host_access_list")
-        .where("proxy_host_id", proxyHostId)
-        .select("access_list_id");
-
-    const existingIds = new Set(existingRows.map((row) => row.access_list_id));
-
-    const idsToInsert = [...desiredIds].filter((id) => !existingIds.has(id));
-    const idsToDelete = [...existingIds].filter((id) => !desiredIds.has(id));
-
-    if (idsToInsert.length > 0) {
-        await trx("proxy_host_access_list").insert(
-            idsToInsert.map((access_list_id) => ({
-                proxy_host_id: proxyHostId,
-                access_list_id,
-            })),
-        );
-    }
-
-    if (idsToDelete.length > 0) {
-        await trx("proxy_host_access_list")
-            .where("proxy_host_id", proxyHostId)
-            .whereIn("access_list_id", idsToDelete)
-            .delete();
-    }
-};
-
-
 const getMergedItems = (accessLists) => {
     const seen = new Set();
     const merged = [];
@@ -134,29 +60,19 @@ const writeHtpasswdFile = async (filename, items, label) => {
     logger.success(`Built merged Access file ${filename} for: ${label}`);
 };
 
-const buildAclFile = (list) => {
-    const lists = list || [];
-    const first = lists[0] || null; // satisfy any/pass auth need to be specified in the first acl
-    return {
-        items: getMergedItems(lists),
-        clients: lists.flatMap((list) => list.clients || []),
-        satisfy_any: first ? !!first.satisfy_any : false,
-        pass_auth: first ? !!first.pass_auth : false,
-        source_acl_ids: lists.map((list) => list.id).filter((id) => Number.isInteger(id)),
-    };
-};
+
 
 /**
-     * 
-     * @param {*} proxyHost 
-     * @param {*} accessLists 
-     * @returns 
-     */
+ * 
+ * @param {*} proxyHost 
+ * @param {*} accessLists 
+ * @returns 
+ */
 const buildHostFile = async (proxyHost, accessLists) => {
     if (accessLists.length < 2) { // if size is 1 then use the default acl file. If empty, nothing to generate
         return;
     }
-    const effectiveAccess = buildAclFile(accessLists);
+    const effectiveAccess = internalProxyHostAccessList.buildAclFile(accessLists);
     const filename = getProxyHostFilename(proxyHost);
 
     if (!effectiveAccess.items.length) {
@@ -177,21 +93,113 @@ const buildLocationFile = async (proxyHost, location, accessLists) => {
     if (accessLists.length < 2) {  // if size is 1 then use the default acl file. If empty, nothing to generate
         return;
     }
-    const effectiveAccess = buildAclFile(accessLists);
+    const effectiveAccess = internalProxyHostAccessList.buildAclFile(accessLists);
     const filename = getProxyLocationFilename(proxyHost, location);
 
     if (!effectiveAccess.items.length) {
         await rm(filename, { force: true });
-         return; // dont create an empty file
+        return; // dont create an empty file
     }
     await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id} location #${location.id}`);
 };
 
-
 const internalProxyHostAccessList = {
-    getAccessListRelationRows,
-    syncAccessListRelations,
 
+    /**
+     * 
+     * @param {*} list 
+     * @returns 
+     */
+    buildAclFile: (list) => {
+        const lists = list || [];
+        const first = lists[0] || null; // satisfy any/pass auth need to be specified in the first acl
+        return {
+            items: getMergedItems(lists),
+            clients: lists.flatMap((list) => list.clients || []),
+            satisfy_any: first ? !!first.satisfy_any : false,
+            pass_auth: first ? !!first.pass_auth : false,
+            source_acl_ids: lists.map((list) => list.id).filter((id) => Number.isInteger(id)),
+        };
+    },
+
+    /**
+     * 
+     * @param {*} proxyHostId 
+     * @param {*} data 
+     * @returns 
+     */
+    getAccessListRelationRows: (proxyHostId, data) => {
+        const relationIds = new Set();
+
+        // perform data sanitisation
+        if (data.access_list_type === "custom" && Array.isArray(data.access_list_ids)) {
+            data.access_list_ids.forEach((id) => {
+                if (Number.isInteger(id)) {
+                    relationIds.add(id);
+                }
+            });
+        }
+
+        // since locations is stored as a json, extract it and flatten it to store in the join table
+        if (Array.isArray(data.locations)) {
+            data.locations.forEach((location) => {
+                if (location.access_list_type === "custom" && Array.isArray(location.access_list_ids)) {
+                    location.access_list_ids.forEach((id) => {
+                        if (Number.isInteger(id)) {
+                            relationIds.add(id);
+                        }
+                    });
+                }
+            });
+        }
+        // now map the acls to proxy hosts
+        return Array.from(relationIds).map((access_list_id) => ({
+            proxy_host_id: proxyHostId,
+            access_list_id,
+        }));
+    },
+
+
+    /**
+     * Updates the proxy_host_access_list database table to match the data stored in the object
+     * @param {*} trx 
+     * @param {*} proxyHostId 
+     * @param {*} data 
+     */
+    syncAccessListRelations: async (trx, proxyHostId, data) => {
+        const desiredRows = internalProxyHostAccessList.getAccessListRelationRows(proxyHostId, data);
+        const desiredIds = new Set(desiredRows.map((row) => row.access_list_id));
+
+        const existingRows = await trx("proxy_host_access_list")
+            .where("proxy_host_id", proxyHostId)
+            .select("access_list_id");
+
+        const existingIds = new Set(existingRows.map((row) => row.access_list_id));
+
+        const idsToInsert = [...desiredIds].filter((id) => !existingIds.has(id));
+        const idsToDelete = [...existingIds].filter((id) => !desiredIds.has(id));
+
+        if (idsToInsert.length > 0) {
+            await trx("proxy_host_access_list").insert(
+                idsToInsert.map((access_list_id) => ({
+                    proxy_host_id: proxyHostId,
+                    access_list_id,
+                })),
+            );
+        }
+
+        if (idsToDelete.length > 0) {
+            await trx("proxy_host_access_list")
+                .where("proxy_host_id", proxyHostId)
+                .whereIn("access_list_id", idsToDelete)
+                .delete();
+        }
+    },
+
+    /**
+     * 
+     * @param {*} proxyHost 
+     */
     delete: async (proxyHost) => {
         const oldFiles = await findHostFiles(proxyHost);
         for (const file of oldFiles) {
@@ -199,6 +207,11 @@ const internalProxyHostAccessList = {
         }
     },
 
+    /**
+     * 
+     * @param {*} proxyHost 
+     * @returns 
+     */
     getHostFileName: (proxyHost) => {
         if (proxyHost.access_list_type === "custom") {
             const accessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
@@ -210,6 +223,12 @@ const internalProxyHostAccessList = {
         return "";
     },
 
+    /**
+     * 
+     * @param {*} proxyHost 
+     * @param {*} location 
+     * @returns 
+     */
     getLocationFileName: (proxyHost, location) => {
         if (location.access_list_type === "global") {
             return internalProxyHostAccessList.getHostFileName(proxyHost);
@@ -224,6 +243,10 @@ const internalProxyHostAccessList = {
         return "";
     },
 
+    /**
+     * Generates the output htpasswd file on the filesystem
+     * @param {*} proxyHost 
+     */
     build: async (proxyHost) => {
         const hostAccessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
 
@@ -241,6 +264,12 @@ const internalProxyHostAccessList = {
         }
     },
 
+    /**
+     * Populates the access_list object in proxyHost and proxyHost.locations with the actual object
+     * data
+     * @param {*} proxyHost 
+     * @returns 
+     */
     populateLocationAccessLists: async (proxyHost) => {
         if (!proxyHost || !Array.isArray(proxyHost.locations) || proxyHost.locations.length === 0) {
             return proxyHost;
@@ -279,7 +308,7 @@ const internalProxyHostAccessList = {
     },
 
     /**
-     * used by the get/update functions of hosts, this sets the access_list_ids
+     * used by the get/update functions of proxy_host and access_list, this sets the access_list_ids
      * @param {Object} proxyHost 
      * @returns {Object}
      */
