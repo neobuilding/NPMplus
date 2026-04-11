@@ -144,7 +144,6 @@ export interface ProxyHost {
 	trustForwardedProto: boolean;
 	// Expansions:
 	owner?: User;
-	accessList?: AccessList;
 	accessLists?: AccessList[];
 	accessListType: "public" | "custom";
 	certificate?: Certificate;
