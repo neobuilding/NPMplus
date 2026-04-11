@@ -289,6 +289,9 @@ const internalProxyHost = {
 				}
 				
 				return thisRow;
+			}).then((row) => {
+				// locations doesnt have accessList objects only IDs so populate it with the object itself
+				return internalProxyHostAccessList.populateLocationAccessLists(row);
 			});
 	},
 
@@ -327,9 +330,13 @@ const internalProxyHost = {
 					})
 					.then(() => {
 						// Delete Nginx Config
-						return internalNginx.deleteConfig("proxy_host", row).then(() => {
-							return internalNginx.reload();
-						});
+						return internalNginx.deleteConfig("proxy_host", row)
+							.then(() => {
+								return internalProxyHostAccessList.delete(row);
+							})
+							.then(() => {
+								return internalNginx.reload();
+							});
 					})
 					.then(() => {
 						// Add to audit log
@@ -481,7 +488,10 @@ const internalProxyHost = {
 		}
 
 		const rows = await query.then(utils.omitRows(omissions()));
-		const aclRows = rows.map((row) => internalHost.cleanAccessListTypes(row));
+		const aclRows = rows.map((row) => internalHost.cleanAccessListTypes(row)).then((row) => {
+			// locations doesnt have accessList objects only IDs so populate it with the object itself
+			return internalProxyHostAccessList.populateLocationAccessLists(row);
+		});
 
 		if (typeof expand !== "undefined" && expand !== null && expand.indexOf("certificate") !== -1) {
 			return internalHost.cleanAllRowsCertificateMeta(aclRows);

@@ -1,7 +1,7 @@
 import { rm, readdir } from "node:fs/promises";
 import { access as logger } from "../logger.js";
-import internalAccessList  from "./access-list.js";
-
+import accessListModel from "../models/access_list.js";
+import internalAccessList from "./access-list.js";
 const GENERATED_DIR = "/data/access";
 
 /**
@@ -182,18 +182,22 @@ const buildLocationFile = async (proxyHost, location, accessLists) => {
     return effectiveAccess;
 };
 
-export default {
+const internalProxyHostAccessList = {
     getAccessListRelationRows,
     syncAccessListRelations,
+
+    delete: async (proxyHost) => {
+        const oldFiles = await findHostFiles(proxyHost);
+        for (const file of oldFiles) {
+            await rm(file, { force: true });
+        }
+    },
 
     build: async (proxyHost) => {
         const hostAccessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
 
         // cleanup all old files for this host and regenerate
-        const oldFiles = await findHostFiles(proxyHost);
-        for (const file of oldFiles) {
-            await rm(file, { force: true });
-        }
+        await internalProxyHostAccessList.delete(proxyHost);
 
         await buildHostFile(proxyHost, hostAccessLists);
 
@@ -205,4 +209,43 @@ export default {
             }
         }
     },
+
+    populateLocationAccessLists: async (proxyHost) => {
+        if (!proxyHost || !Array.isArray(proxyHost.locations) || proxyHost.locations.length === 0) {
+            return proxyHost;
+        }
+
+        const allIds = [...new Set(proxyHost.locations.flatMap((location) =>
+            location.accessListType === "custom" && Array.isArray(location.accessListIds) ? location.accessListIds : [],
+        ))];
+
+        if (allIds.length === 0) {
+            proxyHost.locations = proxyHost.locations.map((location) => ({
+                ...location,
+                accessLists: [],
+            }));
+            return proxyHost;
+        }
+
+        const rows = await accessListModel
+            .query()
+            .whereIn("id", allIds)
+            .andWhere("is_deleted", 0)
+            .withGraphFetched("[clients,items]");
+
+        const byId = new Map(rows.map((row) => [row.id, row]));
+
+        proxyHost.locations = proxyHost.locations.map((location) => {
+            const ids = Array.isArray(location.accessListIds) ? location.accessListIds : [];
+
+            return {
+                ...location,
+                accessLists: ids.map((id) => byId.get(id)).filter(Boolean),
+            };
+        });
+
+        return proxyHost;
+    },
 };
+
+export default internalProxyHostAccessList;
