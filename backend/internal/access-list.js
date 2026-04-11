@@ -73,7 +73,6 @@ const internalAccessList = {
 		// Audit log
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
-
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
@@ -439,23 +438,15 @@ const internalAccessList = {
 	},
 
 	/**
-	 * @param   {Object}  list
-	 * @param   {Integer} list.id
-	 * @param   {String}  list.name
-	 * @param   {Array}   list.items
-	 * @returns {Promise}
+	 * 
+	 * @param {*} htpasswdFile 
+	 * @param {*} items 
 	 */
-	build: async (list) => {
-		logger.info(`Building Access file #${list.id} for: ${list.name}`);
-
-		const htpasswdFile = internalAccessList.getFilename(list);
-
-		await rm(htpasswdFile, { force: true });
-
+	writeData: async (htpasswdFile, items) => {
 		await writeFile(htpasswdFile, "", { encoding: "utf8" });
 
-		if (list.items?.length) {
-			for (const item of list.items) {
+		if (items?.length) {
+			for (const item of items) {
 				if (item.username?.length && item.password?.length) {
 					logger.info(`Adding: ${item.username}`);
 
@@ -470,7 +461,23 @@ const internalAccessList = {
 				}
 			}
 		}
+	},
 
+	/**
+	 * @param   {Object}  list
+	 * @param   {Integer} list.id
+	 * @param   {String}  list.name
+	 * @param   {Array}   list.items
+	 * @returns {Promise}
+	 */
+	build: async (list) => {
+		logger.info(`Building Access file #${list.id} for: ${list.name}`);
+
+		const htpasswdFile = internalAccessList.getFilename(list);
+
+		await rm(htpasswdFile, { force: true });
+		await internalAccessList.writeData(htpasswdFile, list.items);
+		
 		logger.success(`Built Access file #${list.id} for: ${list.name}`);
 	},
 };

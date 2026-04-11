@@ -5,6 +5,7 @@ import _ from "lodash";
 import errs from "../lib/error.js";
 import utils from "../lib/utils.js";
 import { debug, nginx as logger } from "../logger.js";
+import internalProxyHostAccessList from "./proxy-host-access-list.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,6 +28,7 @@ const internalNginx = {
 	configure: async (model, host_type, host) => {
 		let combined_meta = {};
 
+		await internalProxyHostAccessList.build(host);
 		await internalNginx.deleteConfig(host_type, host);
 		await internalNginx.generateConfig(host_type, host);
 

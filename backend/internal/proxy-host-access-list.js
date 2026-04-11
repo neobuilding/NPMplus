@@ -1,5 +1,6 @@
-import { appendFile, rm, writeFile } from "node:fs/promises";
+import { rm, readdir } from "node:fs/promises";
 import { access as logger } from "../logger.js";
+import internalAccessList  from "./access-list.js";
 
 const GENERATED_DIR = "/data/access";
 
@@ -92,13 +93,17 @@ const getMergedItems = (accessLists) => {
     return merged;
 };
 
+const getHostFilePrefix = (proxyHost) => {
+    return `host-${proxyHost.id}`
+};
+
 /**
     * 
     * @param {*} proxyHost 
     * @returns 
     */
 const getHostFilename = (proxyHost) => {
-    return `${GENERATED_DIR}/host-${proxyHost.id}`;
+    return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}`;
 };
 
 /**
@@ -108,25 +113,27 @@ const getHostFilename = (proxyHost) => {
  * @returns 
  */
 const getLocationFilename = (proxyHost, location) => {
-    return `${GENERATED_DIR}/host-${proxyHost.id}-location-${location.id}`;
+    return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}-location-${location.id}`;
+};
+
+
+const findHostFiles = async (proxyHost) => {
+    const prefix = getHostFilePrefix(proxyHost);
+    const entries = await readdir(GENERATED_DIR, { withFileTypes: true });
+
+    return entries.filter((entry) => entry.isFile() && entry.name.startsWith(prefix)).map((entry) => `${GENERATED_DIR}/${entry.name}`);
 };
 
 const writeHtpasswdFile = async (filename, items, label) => {
     logger.info(`Building multi Access file ${filename} for: ${label}`);
 
     await rm(filename, { force: true });
-    await writeFile(filename, "", { encoding: "utf8" });
 
-    for (const item of items || []) {
-        await appendFile(filename, `${item.username}:${item.password}\n`, {
-            encoding: "utf8",
-        });
-    }
-
+    await internalAccessList.writeData(filename, items);
     logger.success(`Built merged Access file ${filename} for: ${label}`);
 };
 
-const build = (list) => {
+const buildAclFile = (list) => {
     const lists = list || [];
     const first = lists[0] || null; // satisfy any or pass auth need to be specified in the first acl
     return {
@@ -138,44 +145,64 @@ const build = (list) => {
     };
 };
 
+/**
+     * 
+     * @param {*} proxyHost 
+     * @param {*} accessLists 
+     * @returns 
+     */
+const buildHostFile = async (proxyHost, accessLists) => {
+    const effectiveAccess = buildAclFile(accessLists);
+    const filename = getHostFilename(proxyHost);
+
+    if (!effectiveAccess.items.length) {
+        await rm(filename, { force: true });
+        return effectiveAccess;
+    }
+    await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id}`);
+    return effectiveAccess;
+};
+
+/**
+ * 
+ * @param {*} proxyHost 
+ * @param {*} location 
+ * @param {*} accessLists 
+ * @returns 
+ */
+const buildLocationFile = async (proxyHost, location, accessLists) => {
+    const effectiveAccess = buildAclFile(accessLists);
+    const filename = getLocationFilename(proxyHost, location);
+
+    if (!effectiveAccess.items.length) {
+        await rm(filename, { force: true });
+        return effectiveAccess;
+    }
+    await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id} location #${location.id}`);
+    return effectiveAccess;
+};
+
 export default {
     getAccessListRelationRows,
     syncAccessListRelations,
 
-    /**
-     * 
-     * @param {*} proxyHost 
-     * @param {*} accessLists 
-     * @returns 
-     */
-    buildHostFile: async (proxyHost, accessLists) => {
-        const effectiveAccess = build(accessLists);
-        const filename = getHostFilename(proxyHost);
+    build: async (proxyHost) => {
+        const hostAccessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
 
-        if (!effectiveAccess.items.length) {
-            await rm(filename, { force: true });
-            return effectiveAccess;
+        // cleanup all old files for this host and regenerate
+        const oldFiles = await findHostFiles(proxyHost);
+        for (const file of oldFiles) {
+            await rm(file, { force: true });
         }
-        await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id}`);
-        return effectiveAccess;
+
+        await buildHostFile(proxyHost, hostAccessLists);
+
+        for (const location of proxyHost.locations || []) {
+            if (location.accessListType === "custom") {
+                await buildLocationFile(proxyHost, location, location.accessLists || []);
+            } else if (location.accessListType === "global") {
+                await buildLocationFile(proxyHost, location, hostAccessLists || []);
+            }
+        }
     },
-
-    /**
-     * 
-     * @param {*} proxyHost 
-     * @param {*} location 
-     * @param {*} accessLists 
-     * @returns 
-     */
-    buildLocationFile: async (proxyHost, location, accessLists) => {
-        const effectiveAccess = build(accessLists);
-        const filename = getLocationFilename(proxyHost, location);
-
-        if (!effectiveAccess.items.length) {
-            await rm(filename, { force: true });
-            return effectiveAccess;
-        }
-        await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id} location #${location.id}`);
-        return effectiveAccess;
-    }
 };
