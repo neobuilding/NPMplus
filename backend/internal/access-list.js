@@ -310,7 +310,7 @@ const internalAccessList = {
 					updatedLocation.access_list_ids = [];
 				}
 				updatedLocation.access_list_ids = updatedLocation.access_list_ids.filter((id) => id !== row.id);
-				if (updatedLocation.access_list_ids.length === 0) {
+				if (updatedLocation.access_list_ids.length === 0 && updatedLocation.access_list_type === "custom") {
 					updatedLocation.access_list_type = "global";
 				}
 				return updatedLocation;
