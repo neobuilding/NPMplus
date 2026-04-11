@@ -2,6 +2,7 @@ import { rm, readdir } from "node:fs/promises";
 import { access as logger } from "../logger.js";
 import accessListModel from "../models/access_list.js";
 import internalAccessList from "./access-list.js";
+
 const GENERATED_DIR = "/data/access";
 
 /**
@@ -102,7 +103,7 @@ const getHostFilePrefix = (proxyHost) => {
     * @param {*} proxyHost 
     * @returns 
     */
-const getHostFilename = (proxyHost) => {
+const getProxyHostFilename = (proxyHost) => {
     return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}`;
 };
 
@@ -112,7 +113,7 @@ const getHostFilename = (proxyHost) => {
  * @param {*} location 
  * @returns 
  */
-const getLocationFilename = (proxyHost, location) => {
+const getProxyLocationFilename = (proxyHost, location) => {
     return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}-location-${location.id}`;
 };
 
@@ -135,7 +136,7 @@ const writeHtpasswdFile = async (filename, items, label) => {
 
 const buildAclFile = (list) => {
     const lists = list || [];
-    const first = lists[0] || null; // satisfy any or pass auth need to be specified in the first acl
+    const first = lists[0] || null; // satisfy any/pass auth need to be specified in the first acl
     return {
         items: getMergedItems(lists),
         clients: lists.flatMap((list) => list.clients || []),
@@ -152,15 +153,17 @@ const buildAclFile = (list) => {
      * @returns 
      */
 const buildHostFile = async (proxyHost, accessLists) => {
+    if (accessLists.length < 2) { // if size is 1 then use the default acl file. If empty, nothing to generate
+        return;
+    }
     const effectiveAccess = buildAclFile(accessLists);
-    const filename = getHostFilename(proxyHost);
+    const filename = getProxyHostFilename(proxyHost);
 
     if (!effectiveAccess.items.length) {
         await rm(filename, { force: true });
-        return effectiveAccess;
+        return; // dont create an empty file
     }
     await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id}`);
-    return effectiveAccess;
 };
 
 /**
@@ -171,16 +174,19 @@ const buildHostFile = async (proxyHost, accessLists) => {
  * @returns 
  */
 const buildLocationFile = async (proxyHost, location, accessLists) => {
+    if (accessLists.length < 2) {  // if size is 1 then use the default acl file. If empty, nothing to generate
+        return;
+    }
     const effectiveAccess = buildAclFile(accessLists);
-    const filename = getLocationFilename(proxyHost, location);
+    const filename = getProxyLocationFilename(proxyHost, location);
 
     if (!effectiveAccess.items.length) {
         await rm(filename, { force: true });
-        return effectiveAccess;
+         return; // dont create an empty file
     }
     await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id} location #${location.id}`);
-    return effectiveAccess;
 };
+
 
 const internalProxyHostAccessList = {
     getAccessListRelationRows,
@@ -191,6 +197,31 @@ const internalProxyHostAccessList = {
         for (const file of oldFiles) {
             await rm(file, { force: true });
         }
+    },
+
+    getHostFileName: (proxyHost) => {
+        if (proxyHost.access_list_type === "custom") {
+            const accessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
+            if (accessLists.length === 1) {
+                return internalAccessList.getFilename(accessLists[0]);
+            }
+            return getProxyHostFilename(proxyHost);
+        }
+        return "";
+    },
+
+    getLocationFileName: (proxyHost, location) => {
+        if (location.access_list_type === "global") {
+            return internalProxyHostAccessList.getHostFileName(proxyHost);
+        }
+        if (location.access_list_type === "custom") {
+            const accessLists = Array.isArray(location.access_lists) ? location.access_lists : [];
+            if (accessLists.length === 1) {
+                return internalAccessList.getFilename(accessLists[0]);
+            }
+            return getProxyLocationFilename(proxyHost, location);
+        }
+        return "";
     },
 
     build: async (proxyHost) => {
@@ -248,54 +279,53 @@ const internalProxyHostAccessList = {
     },
 
     /**
-	 * used by the get/update functions of hosts, this sets the access_list_ids
-	 * @param {Object} proxyHost 
-	 * @returns {Object}
-	 */
-	cleanAccessListTypes(proxyHost) {
-		if (!proxyHost) { return proxyHost; }
+     * used by the get/update functions of hosts, this sets the access_list_ids
+     * @param {Object} proxyHost 
+     * @returns {Object}
+     */
+    cleanAccessListTypes(proxyHost) {
+        if (!proxyHost) { return proxyHost; }
 
-		// ensure array exists
-		if (!Array.isArray(proxyHost.access_list_ids)) {
-			proxyHost.access_list_ids = [];
-		}
+        // ensure array exists
+        if (!Array.isArray(proxyHost.access_list_ids)) {
+            proxyHost.access_list_ids = [];
+        }
 
-		// fallback from old column (only if needed)
-		if (proxyHost.access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
-			proxyHost.access_list_ids = [proxyHost.access_list_id];
-			proxyHost.access_list_type = "custom";
-		}
+        // fallback from old column (only if needed)
+        if (proxyHost.access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
+            proxyHost.access_list_ids = [proxyHost.access_list_id];
+            proxyHost.access_list_type = "custom";
+        }
 
-		// ensure type exists
-		if (!proxyHost.access_list_type) {
-			proxyHost.access_list_type = "public";
-		}
-		
-		if (Array.isArray(proxyHost.locations)) {
-			// generate the ids for a location (this is only used for the htpasswd file tracking with multi acls)
-			const existingIds = proxyHost.locations.map((location) => location.id).filter((id) => Number.isInteger(id));
-			let count = existingIds.length ? Math.max(...existingIds) + 1 : 0;
-			// handle both snake and camel case
-			proxyHost.locations = proxyHost.locations.map((location) => {
-				if(!Number.isInteger(location.id)){
-					location.id = count++;
-				}
-				
-				const accessListIds = Array.isArray(location.accessListIds)
-					? location.accessListIds
-					: Array.isArray(location.access_list_ids)
-						? location.access_list_ids : [];
-				const accessListType = location.accessListType || location.access_list_type || "global";
-				return {
-					...location,
-					access_list_ids: accessListIds,
-					access_list_type: accessListType,
-				};
-			});
-		}
+        // ensure type exists
+        if (!proxyHost.access_list_type) {
+            proxyHost.access_list_type = "public";
+        }
 
-		return proxyHost;
-	},
+        if (Array.isArray(proxyHost.locations)) {
+            // generate the ids for a location (this is only used for the htpasswd file tracking with multi acls)
+            const existingIds = proxyHost.locations.map((location) => location.id).filter((id) => Number.isInteger(id));
+            let count = existingIds.length ? Math.max(...existingIds) + 1 : 0;
+            // handle both snake and camel case
+            proxyHost.locations = proxyHost.locations.map((location) => {
+                if (!Number.isInteger(location.id)) {
+                    location.id = count++;
+                }
+
+                const accessListIds = Array.isArray(location.accessListIds)
+                    ? location.accessListIds
+                    : Array.isArray(location.access_list_ids)
+                        ? location.access_list_ids : [];
+                const accessListType = location.accessListType || location.access_list_type || "global";
+                return {
+                    ...location,
+                    access_list_ids: accessListIds,
+                    access_list_type: accessListType,
+                };
+            });
+        }
+        return proxyHost;
+    },
 };
 
 export default internalProxyHostAccessList;

@@ -258,10 +258,19 @@ const internalNginx = {
 			host.server_names = host.domain_names.map((domain_name) => domainToASCII(domain_name) || domain_name);
 		}
 
+		const hostHtpasswdFileName = internalProxyHostAccessList.getHostFileName(host);
+		if(hostHtpasswdFileName.length > 0){
+			host.filename = hostHtpasswdFileName;
+		}
+
 		host.upstreams = await internalNginx.renderUpstreams(host);
 
 		if (host.locations) {
 			_.map(host.locations, (location) => {
+				const htpasswdFileName = internalProxyHostAccessList.getLocationFileName(host, location);
+				if(htpasswdFileName.length > 0){
+					location.filename = htpasswdFileName;
+				}
 				if (location.npmplus_auth_request === "anubis") {
 					host.create_anubis_locations = true;
 				}
