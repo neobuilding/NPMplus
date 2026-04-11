@@ -25,8 +25,8 @@ const getAccessListRelationRows = (proxyHostId, data) => {
     // since locations is stored as a json, extract it and flatten it to store in the join table
     if (Array.isArray(data.locations)) {
         data.locations.forEach((location) => {
-            if (location.accessListType === "custom" && Array.isArray(location.accessListIds)) {
-                location.accessListIds.forEach((id) => {
+            if (location.access_list_type === "custom" && Array.isArray(location.access_list_ids)) {
+                location.access_list_ids.forEach((id) => {
                     if (Number.isInteger(id)) {
                         relationIds.add(id);
                     }
@@ -202,9 +202,9 @@ const internalProxyHostAccessList = {
         await buildHostFile(proxyHost, hostAccessLists);
 
         for (const location of proxyHost.locations || []) {
-            if (location.accessListType === "custom") {
-                await buildLocationFile(proxyHost, location, location.accessLists || []);
-            } else if (location.accessListType === "global") {
+            if (location.access_list_type === "custom") {
+                await buildLocationFile(proxyHost, location, location.access_lists || []);
+            } else if (location.access_list_type === "global") {
                 await buildLocationFile(proxyHost, location, hostAccessLists || []);
             }
         }
@@ -216,13 +216,13 @@ const internalProxyHostAccessList = {
         }
 
         const allIds = [...new Set(proxyHost.locations.flatMap((location) =>
-            location.accessListType === "custom" && Array.isArray(location.accessListIds) ? location.accessListIds : [],
+            location.access_list_type === "custom" && Array.isArray(location.access_list_ids) ? location.access_list_ids : [],
         ))];
 
         if (allIds.length === 0) {
             proxyHost.locations = proxyHost.locations.map((location) => ({
                 ...location,
-                accessLists: [],
+                access_lists: [],
             }));
             return proxyHost;
         }
@@ -236,16 +236,66 @@ const internalProxyHostAccessList = {
         const byId = new Map(rows.map((row) => [row.id, row]));
 
         proxyHost.locations = proxyHost.locations.map((location) => {
-            const ids = Array.isArray(location.accessListIds) ? location.accessListIds : [];
+            const ids = Array.isArray(location.access_list_ids) ? location.access_list_ids : [];
 
             return {
                 ...location,
-                accessLists: ids.map((id) => byId.get(id)).filter(Boolean),
+                access_lists: ids.map((id) => byId.get(id)).filter(Boolean),
             };
         });
 
         return proxyHost;
     },
+
+    /**
+	 * used by the get/update functions of hosts, this sets the access_list_ids
+	 * @param {Object} proxyHost 
+	 * @returns {Object}
+	 */
+	cleanAccessListTypes(proxyHost) {
+		if (!proxyHost) { return proxyHost; }
+
+		// ensure array exists
+		if (!Array.isArray(proxyHost.access_list_ids)) {
+			proxyHost.access_list_ids = [];
+		}
+
+		// fallback from old column (only if needed)
+		if (proxyHost.access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
+			proxyHost.access_list_ids = [proxyHost.access_list_id];
+			proxyHost.access_list_type = "custom";
+		}
+
+		// ensure type exists
+		if (!proxyHost.access_list_type) {
+			proxyHost.access_list_type = "public";
+		}
+		
+		if (Array.isArray(proxyHost.locations)) {
+			// generate the ids for a location (this is only used for the htpasswd file tracking with multi acls)
+			const existingIds = proxyHost.locations.map((location) => location.id).filter((id) => Number.isInteger(id));
+			let count = existingIds.length ? Math.max(...existingIds) + 1 : 0;
+			// handle both snake and camel case
+			proxyHost.locations = proxyHost.locations.map((location) => {
+				if(!Number.isInteger(location.id)){
+					location.id = count++;
+				}
+				
+				const accessListIds = Array.isArray(location.accessListIds)
+					? location.accessListIds
+					: Array.isArray(location.access_list_ids)
+						? location.access_list_ids : [];
+				const accessListType = location.accessListType || location.access_list_type || "global";
+				return {
+					...location,
+					access_list_ids: accessListIds,
+					access_list_type: accessListType,
+				};
+			});
+		}
+
+		return proxyHost;
+	},
 };
 
 export default internalProxyHostAccessList;

@@ -45,55 +45,6 @@ const internalHost = {
 
 		return rows;
 	},
-	/**
-	 * used by the get/update functions of hosts, this sets the access_list_ids
-	 * @param {Object} row 
-	 * @returns {Object}
-	 */
-	cleanAccessListTypes(row) {
-		if (!row) { return row; }
-
-		// ensure array exists
-		if (!Array.isArray(row.access_list_ids)) {
-			row.access_list_ids = [];
-		}
-
-		// fallback from old column (only if needed)
-		if (row.access_list_ids.length === 0 && row.access_list_id && row.access_list_id !== 0) {
-			row.access_list_ids = [row.access_list_id];
-			row.access_list_type = "custom";
-		}
-
-		// ensure type exists
-		if (!row.access_list_type) {
-			row.access_list_type = "public";
-		}
-		
-		if (Array.isArray(row.locations)) {
-			// generate the ids for a location (this is only used for the htpasswd file tracking with multi acls)
-			const existingIds = row.locations.map((location) => location.id).filter((id) => Number.isInteger(id));
-			let count = existingIds.length ? Math.max(...existingIds) + 1 : 0;
-			// handle both snake and camel case
-			row.locations = row.locations.map((location) => {
-				if(!Number.isInteger(location.id)){
-					location.id = count++;
-				}
-				
-				const accessListIds = Array.isArray(location.accessListIds)
-					? location.accessListIds
-					: Array.isArray(location.access_list_ids)
-						? location.access_list_ids : [];
-				const accessListType = location.accessListType || location.access_list_type || "global";
-				return {
-					...location,
-					accessListIds,
-					accessListType,
-				};
-			});
-		}
-
-		return row;
-	},
 
 	/**
 	 * used by the get/update functions of hosts, this removes the certificate meta if present

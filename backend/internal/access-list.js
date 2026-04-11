@@ -78,8 +78,10 @@ const internalAccessList = {
 			// locations doesnt have accessList objects only IDs so populate it with the object itself
 			freshRow.proxy_hosts = await Promise
 				.all((freshRow.proxy_hosts || [])
-					.map((host) => internalProxyHostAccessList.populateLocationAccessLists(host)));
-
+					.map((host) => {
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 
@@ -194,7 +196,10 @@ const internalAccessList = {
 			// locations doesnt have accessList objects only IDs so populate it with the object itself
 			freshRow.proxy_hosts = await Promise
 				.all((freshRow.proxy_hosts || [])
-					.map((host) => internalProxyHostAccessList.populateLocationAccessLists(host)));
+					.map((host) => {
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 		await internalNginx.reload();
@@ -301,12 +306,12 @@ const internalAccessList = {
 			}
 			updatedHost.locations = updatedHost.locations.map((location) => {
 				const updatedLocation = { ...location };
-				if (!Array.isArray(updatedLocation.accessListIds)) {
-					updatedLocation.accessListIds = [];
+				if (!Array.isArray(updatedLocation.access_list_ids)) {
+					updatedLocation.access_list_ids = [];
 				}
-				updatedLocation.accessListIds = updatedLocation.accessListIds.filter((id) => id !== row.id);
-				if (updatedLocation.accessListIds.length === 0) {
-					updatedLocation.accessListType = "global";
+				updatedLocation.access_list_ids = updatedLocation.access_list_ids.filter((id) => id !== row.id);
+				if (updatedLocation.access_list_ids.length === 0) {
+					updatedLocation.access_list_type = "global";
 				}
 				return updatedLocation;
 			});
@@ -336,7 +341,8 @@ const internalAccessList = {
 			row.proxy_hosts = await Promise
 				.all((row.proxy_hosts || [])
 					.map((host) => {
-						return internalProxyHostAccessList.populateLocationAccessLists(host);
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
 					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
 		}

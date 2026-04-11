@@ -13,6 +13,7 @@ import redirectionModel from "./models/redirection_host.js";
 import deadModel from "./models/dead_host.js";
 import streamModel from "./models/stream.js";
 import internalNginx from "./internal/nginx.js";
+import internalProxyHostAccessList from "./internal/proxy-host-access-list.js";
 
 export const isSetup = async () => {
 	const row = await userModel.query().select("id").where("is_deleted", 0).first();
@@ -156,7 +157,13 @@ const regenerateAllHosts = async () => {
 			.withGraphFetched(proxyModel.defaultAllowGraph);
 
 		if (proxyHosts?.length) {
-			await internalNginx.bulkGenerateConfigs(proxyModel, "proxy_host", proxyHosts);
+			const updatedProxyHosts = await Promise.all(
+				proxyHosts.map((host) => {
+					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+				})
+			);
+			await internalNginx.bulkGenerateConfigs(proxyModel, "proxy_host", updatedProxyHosts);
 		}
 
 		const redirectionHosts = await redirectionModel
