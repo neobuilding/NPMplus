@@ -329,7 +329,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														<T id="proxy-host.global-access-lists" />
 													</h4>
 													<AccessFields 
-														initialAccessListType={data.accessListType || "public"} 
+														initialAccessListType={data?.accessListType || "public"} 
 														initialAccessListIds={data?.accessListIds || []} 
 														name="accessListIds"
 														type="accessListType"

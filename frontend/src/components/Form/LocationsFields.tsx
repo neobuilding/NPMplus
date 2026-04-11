@@ -224,7 +224,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									<T id="proxy-host.access-lists" />
 								</h4>
 								<AccessFields 
-									initialAccessListType={item.accessListType || "global"} 
+									initialAccessListType={item?.accessListType || "global"} 
 									location={item.path}  
 									initialAccessListIds={item?.accessListIds || []}
 									name={`locations[${idx}].accessListIds`}
