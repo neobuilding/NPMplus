@@ -488,10 +488,13 @@ const internalProxyHost = {
 		}
 
 		const rows = await query.then(utils.omitRows(omissions()));
-		const aclRows = rows.map((row) => internalHost.cleanAccessListTypes(row)).then((row) => {
-			// locations doesnt have accessList objects only IDs so populate it with the object itself
-			return internalProxyHostAccessList.populateLocationAccessLists(row);
-		});
+		const aclRows = await Promise.all(
+			rows.map((row) => {
+				const cleanedRow = internalHost.cleanAccessListTypes(row);
+				// locations doesnt have accessList objects only IDs so populate it with the object itself
+				return internalProxyHostAccessList.populateLocationAccessLists(cleanedRow);
+			})
+		);
 
 		if (typeof expand !== "undefined" && expand !== null && expand.indexOf("certificate") !== -1) {
 			return internalHost.cleanAllRowsCertificateMeta(aclRows);
