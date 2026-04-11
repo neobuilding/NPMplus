@@ -296,6 +296,9 @@
 	"column.incoming-port": {
 		"defaultMessage": "Incoming Port"
 	},
+	"column.location": {
+		"defaultMessage": "Location"
+	},
 	"column.name": {
 		"defaultMessage": "Name"
 	},

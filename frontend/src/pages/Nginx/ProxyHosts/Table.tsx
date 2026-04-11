@@ -78,11 +78,11 @@ export default function Table({
 					return <CertificateFormatter certificate={info.row.original.certificate} />;
 				},
 			}),
-			columnHelper.accessor((row: any) => (row.accessList ? row.accessList.name : "Public"), {
+			columnHelper.accessor((row: any) => (row.accessLists?.length ? row.accessLists[0].name : "Public"), {
 				id: "accessList",
 				header: intl.formatMessage({ id: "column.access" }),
 				cell: (info: any) => {
-					return <AccessListFormatter access={info.row.original.accessList} />;
+					return <AccessListFormatter locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.accessListType} />;
 				},
 			}),
 			columnHelper.accessor(
