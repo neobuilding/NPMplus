@@ -123,6 +123,17 @@ const internalProxyHostAccessList = {
     },
 
     /**
+     * Reorders the accessLists objects based on the order of the IDs (which is required for generation)
+     * @param {*} accessLists 
+     * @param {*} ids 
+     * @returns 
+     */
+    orderAccessListsByIds: (accessLists, ids) => {
+        const byId = new Map((accessLists || []).map((acl) => [acl.id, acl]));
+        return (ids || []).map((id) => byId.get(id)).filter(Boolean);
+    },
+
+    /**
      * 
      * @param {*} proxyHostId 
      * @param {*} data 
