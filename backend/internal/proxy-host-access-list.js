@@ -386,8 +386,10 @@ const internalProxyHostAccessList = {
                     : Array.isArray(location.access_list_ids)
                         ? location.access_list_ids : [];
                 const accessListType = location.accessListType || location.access_list_type || "global";
+                const { accessListIds: _accessListIds, accessListType: _accessListType, ...otherParameters } = location;
+
                 return {
-                    ...location,
+                    ...otherParameters,
                     access_list_ids: accessListIds,
                     access_list_type: accessListType,
                 };
