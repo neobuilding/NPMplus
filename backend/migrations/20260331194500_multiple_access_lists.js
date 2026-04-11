@@ -55,20 +55,20 @@ const up = async (knex) => {
 
 			const updateData = {
 				access_list_ids: JSON.stringify(access_list_ids),
-				access_list_type,
+				access_list_type
 			};
 
 			if (Array.isArray(locations) && locations.length > 0) {
 				const migratedLocations = locations.map((loc) => ({
 					...loc,
-					accessListIds: Array.isArray(loc.accessListIds) ? loc.accessListIds : [],
-					accessListType: loc.accessListType ?? "global",
+					access_list_ids: Array.isArray(loc.access_list_ids) ? loc.access_list_ids : [],
+					access_list_type: loc.access_list_type ?? "global",
 				}));
 				let count = 0;
 				migratedLocations.forEach(location => {
 					location.id = count++;
-					if (Array.isArray(location.accessListIds)) {
-						location.accessListIds.forEach(aclId => {
+					if (Array.isArray(location.access_list_ids)) {
+						location.access_list_ids.forEach(aclId => {
 							acl_hosts[row.id + "_" + aclId] = {
 								proxy_host_id: row.id,
 								access_list_id: aclId,
