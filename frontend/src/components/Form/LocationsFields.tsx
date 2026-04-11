@@ -85,6 +85,15 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		setFormField(newValues);
 	};
 
+	const handleAccessFieldsChange = (idx: number, changes: { accessListIds?: number[]; accessListType?: ProxyLocation["accessListType"] }) => {
+		const newValues = values.map((val: UiLocation, i: number) => {
+			if (i !== idx) { return val; }
+			return { ...val, ...changes };
+		});
+		setValues(newValues);
+		setFormField(newValues);
+	};
+
 	const setFormField = (newValues: UiLocation[]) => {
 		const filtered = newValues.filter((v: UiLocation) => v?.path?.trim() !== "").map(({ uiKey, ...rest }) => rest);
 		setFieldValue(name, filtered);
@@ -229,6 +238,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									initialAccessListIds={item?.accessListIds || []}
 									name={`locations[${idx}].accessListIds`}
 									type={`locations[${idx}].accessListType`}
+									onChange={(changes) => handleAccessFieldsChange(idx, changes)}
 								/>
 							</div>
 							<div className="my-3">

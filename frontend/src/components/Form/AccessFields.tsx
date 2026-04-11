@@ -13,6 +13,10 @@ interface Props {
 	initialAccessListIds: number[];
 	name: string;
 	type: string;
+	onChange?: (next: {
+		accessListIds?: number[];
+		accessListType?: ProxyLocation["accessListType"];
+	}) => void;
 }
 
 interface BaseOption {
@@ -54,7 +58,7 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 	);
 };
 
-export function AccessFields({ initialAccessListType, location, initialAccessListIds, name, type }: Props) {
+export function AccessFields({ initialAccessListType, location, initialAccessListIds, name, type, onChange }: Props) {
 
 	const [values, setValues] = useState(initialAccessListIds || []);
 	const [aclValue, setAclValue] = useState(initialAccessListType);
@@ -128,6 +132,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const applyUpdatedValues = (newValues: number[]) => {
 		setValues(newValues);
 		setFieldValue(name, newValues);
+		onChange?.({ accessListIds: newValues });
 	};
 
 	const onAccessListChange = (acl: AccessList, idx: number) => {
@@ -196,6 +201,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								const value = e.type;
 								setAclValue(value);
 								setFieldValue(type, value);
+								onChange?.({ accessListType: value });
 							}}
 						/>
 					</div>
