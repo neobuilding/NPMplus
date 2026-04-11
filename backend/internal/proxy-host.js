@@ -63,6 +63,7 @@ const internalProxyHost = {
 					thisData.npmplus_location_config = "";
 				}
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
+				internalProxyHostAccessList.validateAccessLists(thisData);
 				return proxyHostModel.transaction(async (trx) => {
 					const row = await proxyHostModel.query(trx).insertAndFetch(thisData);
 
@@ -202,6 +203,7 @@ const internalProxyHost = {
 				
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
+				internalProxyHostAccessList.validateAccessLists(thisData);
 				return proxyHostModel
 					.transaction(async (trx) => {
 						return proxyHostModel

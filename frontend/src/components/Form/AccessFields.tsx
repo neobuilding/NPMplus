@@ -15,12 +15,11 @@ interface Props {
 	type: string;
 }
 
-
 interface BaseOption {
 	readonly label: string;
 	readonly subLabel: string;
 }
-interface AccessOption extends BaseOption{
+interface AccessOption extends BaseOption {
 	readonly value: number;
 	readonly meta: AccessList;
 }
@@ -126,49 +125,49 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		return options.length > 0 ? options[0] : null;
 	}
 
-	const onAccessListChange = (acl: AccessList, idx: number) => {
-		const newValues = values.map((id: number, i: number) => (i === idx ? acl.id || 0 : id));
+	const applyUpdatedValues = (newValues: number[]) => {
 		setValues(newValues);
 		setFieldValue(name, newValues);
+	};
+
+	const onAccessListChange = (acl: AccessList, idx: number) => {
+		const newValues = values.map((id: number, i: number) => (i === idx ? acl.id || 0 : id));
+		applyUpdatedValues(newValues);
 	}
 
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
 		if (newAccessOption && newAccessOption.meta.id) {
 			const newValues = [...values, newAccessOption.meta.id];
-			setValues(newValues);
-			setFieldValue(name, newValues);
+			applyUpdatedValues(newValues);
 		}
 	}
 
 	const handleMoveUp = (idx: number) => {
 		if (idx > 0) {
 			const newIdx = idx - 1;
-			let newValues = [ ...values ];
+			let newValues = [...values];
 			const aclId = newValues[idx];
 			newValues[idx] = newValues[newIdx];
 			newValues[newIdx] = aclId;
-			setValues(newValues);
-			setFieldValue(name, newValues);
+			applyUpdatedValues(newValues);
 		}
 	}
 
 	const handleMoveDown = (idx: number) => {
 		if (idx < (values.length - 1)) {
 			const newIdx = idx + 1;
-			let newValues = [ ...values ];
+			let newValues = [...values];
 			const aclId = newValues[idx];
 			newValues[idx] = newValues[newIdx];
 			newValues[newIdx] = aclId;
-			setValues(newValues);
-			setFieldValue(name, newValues);
+			applyUpdatedValues(newValues);
 		}
 	}
 
 	const handleRemove = (aclId: number) => {
 		const newValues = values.filter((id: number, _) => id !== aclId);
-		setValues(newValues)
-		setFieldValue(name, newValues);
+		applyUpdatedValues(newValues);
 	}
 
 	return (
@@ -262,7 +261,6 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							</a>
 						</div>
 					))}
-
 					{values.length < defaultOptions.length && ( // only show add button if there are more acls that can be added
 						<div className="text-center">
 							<button type="button" className="btn my-3" onClick={handleAdd}>

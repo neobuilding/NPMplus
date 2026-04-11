@@ -1,5 +1,6 @@
 import { rm, readdir } from "node:fs/promises";
 import { access as logger } from "../logger.js";
+import errs from "../lib/error.js";
 import accessListModel from "../models/access_list.js";
 import internalAccessList from "./access-list.js";
 
@@ -25,10 +26,10 @@ const getHostFilePrefix = (proxyHost) => {
 };
 
 /**
-    * 
-    * @param {*} proxyHost 
-    * @returns 
-    */
+ * 
+ * @param {*} proxyHost 
+ * @returns 
+ */
 const getProxyHostFilename = (proxyHost) => {
     return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}`;
 };
@@ -42,7 +43,6 @@ const getProxyHostFilename = (proxyHost) => {
 const getProxyLocationFilename = (proxyHost, location) => {
     return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}-location-${location.id}`;
 };
-
 
 const findHostFiles = async (proxyHost) => {
     const prefix = getHostFilePrefix(proxyHost);
@@ -59,8 +59,6 @@ const writeHtpasswdFile = async (filename, items, label) => {
     await internalAccessList.writeData(filename, items);
     logger.success(`Built merged Access file ${filename} for: ${label}`);
 };
-
-
 
 /**
  * 
@@ -323,8 +321,30 @@ const internalProxyHostAccessList = {
                 access_lists: ids.map((id) => byId.get(id)).filter(Boolean),
             };
         });
-
         return proxyHost;
+    },
+
+    /**
+     * Ensures the provided acls are valid (if custom, at least 1 acl must be specified)
+     * @param {*} proxyHost 
+     * @returns 
+     */
+    validateAccessLists(proxyHost) {
+        if (!proxyHost) {
+            return;
+        }
+
+        if (proxyHost.access_list_type === "custom" && (!Array.isArray(proxyHost.access_list_ids) || proxyHost.access_list_ids.length === 0)) {
+            throw new errs.ValidationError("Custom Access Lists require at least 1 access list to be specified");
+        }
+        if (Array.isArray(proxyHost.locations)) {
+            for (const location of proxyHost.locations) {
+                if (location.access_list_type === "custom" &&
+                    (!Array.isArray(location.access_list_ids) || location.access_list_ids.length === 0)) {
+                    throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+                }
+            }
+        }
     },
 
     /**
