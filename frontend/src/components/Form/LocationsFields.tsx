@@ -2,7 +2,7 @@ import { IconSettings } from "@tabler/icons-react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import cn from "classnames";
 import { useFormikContext } from "formik";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ProxyLocation } from "src/api/backend";
 import { AccessFields } from "src/components";
 import { intl, T } from "src/locale";
@@ -12,8 +12,20 @@ interface Props {
 	initialValues: ProxyLocation[];
 	name?: string;
 }
+
+// this is needed due to react possibly reindexing locations incorrectly, so ensure the accessfields get udpated correctly
+// by using a controlled index/key. This is because may reuse the component and associate an accessfield
+// with a location that was deleted
+type UiLocation = ProxyLocation & { uiKey: number };
+
 export function LocationsFields({ initialValues, name = "locations" }: Props) {
-	const [values, setValues] = useState<ProxyLocation[]>(initialValues || []);
+	const nextUiKey = useRef(0);
+	const createUiLocation = (item: ProxyLocation): UiLocation => ({
+		...item,
+		uiKey: nextUiKey.current++,
+	});
+
+	const [values, setValues] = useState<UiLocation[]>((initialValues || []).map(createUiLocation));
 	const { setFieldValue } = useFormikContext();
 	const [advVisible, setAdvVisible] = useState<number[]>([]);
 
@@ -46,17 +58,17 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 	};
 
 	const handleAdd = () => {
-		setValues([...values, { ...blankItem }]);
+		setValues([...values, createUiLocation(blankItem)]);
 	};
 
 	const handleRemove = (idx: number) => {
-		const newValues = values.filter((_: ProxyLocation, i: number) => i !== idx);
+		const newValues = values.filter((_: UiLocation, i: number) => i !== idx);
 		setValues(newValues);
 		setFormField(newValues);
 	};
 
 	const handleChange = (idx: number, field: string, fieldValue: any) => {
-		const newValues = values.map((v: ProxyLocation, i: number) => {
+		const newValues = values.map((v: UiLocation, i: number) => {
 			if (i !== idx) return v;
 
 			const updatedLocation = { ...v, [field]: fieldValue };
@@ -73,8 +85,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		setFormField(newValues);
 	};
 
-	const setFormField = (newValues: ProxyLocation[]) => {
-		const filtered = newValues.filter((v: ProxyLocation) => v?.path?.trim() !== "");
+	const setFormField = (newValues: UiLocation[]) => {
+		const filtered = newValues.filter((v: UiLocation) => v?.path?.trim() !== "").map(({ uiKey, ...rest }) => rest);
 		setFieldValue(name, filtered);
 	};
 
@@ -90,8 +102,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 
 	return (
 		<>
-			{values.map((item: ProxyLocation, idx: number) => (
-				<div key={idx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
+			{values.map((item: UiLocation, idx: number) => (
+				<div key={item.uiKey} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
 					<div className="card-body">
 						<div className="row mb-3">
 							<label className="row" htmlFor="npmplusEnabled">
