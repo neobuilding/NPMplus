@@ -33,7 +33,7 @@ interface AccessTypeOption extends BaseOption {
 const OptionContent = (label: string, subLabel: string, icon?: ReactNode) => (
 	<div className="flex-fill">
 		<div className="font-weight-medium">
-			{icon}<strong>{label}</strong>
+			{icon}<strong className="ms-1">{label}</strong>
 		</div>
 		<div className="text-secondary mt-1 ps-3">{subLabel}</div>
 	</div>
@@ -205,9 +205,9 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			{!isLoading && !isError && aclValue == "custom" ?
 				<>
 					{values.map((item: number, idx: number) => (
-						<div key={item ?? idx} className="input-group mb-3">
+						<div key={item ?? idx} className="input-group mb-1 shadow-none">
 							<Select<AccessOption, false>
-								className="react-select-container col-md-8 my-3"
+								className="react-select-container col-md-8 mb-1"
 								classNamePrefix="react-select"
 								value={defaultOptions.find((o) => o.value === item) || findFirstAvailableOption()}
 								options={options}
@@ -227,7 +227,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							{idx > 0 ?
 								<a
 									role="button"
-									className="btn my-3"
+									className="btn mb-1 ms-1"
 									onClick={(e) => {
 										e.preventDefault();
 										handleMoveUp(idx);
@@ -240,7 +240,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							{idx < values.length - 1 ?
 								<a
 									role="button"
-									className="btn my-3"
+									className="btn mb-1 ms-1"
 									onClick={(e) => {
 										e.preventDefault();
 										handleMoveDown(idx);
@@ -252,7 +252,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							}
 							<a
 								role="button"
-								className="btn btn-ghost btn-danger p-0 my-3"
+								className="btn btn-ghost btn-danger p-0 mb-1"
 								onClick={(e) => {
 									e.preventDefault();
 									handleRemove(item);
