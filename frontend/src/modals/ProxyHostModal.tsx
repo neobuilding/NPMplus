@@ -40,10 +40,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		setIsSubmitting(true);
 		setErrorMsg(null);
 		
-		// Snapshot for rollback in case of an error
-		const originalGlobalAclIds = JSON.parse(JSON.stringify(values.accessListIds || []));
-		const originalLocations = JSON.parse(JSON.stringify(values.locations || []));
-
 		// Populate locations with global acls over here
 		// Set the unrestricted acls here (remove any data in their acl lists)
 		const globalType = values.accessListType;
@@ -72,8 +68,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 
 		setProxyHost(payload, {
 			onError: (err: any) => {
-				values.accessListIds = originalGlobalAclIds;
-				values.locations = originalLocations;
 				if (err.payload?.debug?.stack) {
 					setErrorMsg(
 						<div className="w-100">
