@@ -19,7 +19,7 @@
 			"schema": {
 				"type": "string",
 				"enum": [
-					"access_list",
+					"access_lists",
 					"owner",
 					"certificate"
 				]

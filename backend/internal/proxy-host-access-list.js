@@ -259,7 +259,11 @@ const internalProxyHostAccessList = {
      * @param {*} proxyHost 
      */
     build: async (proxyHost) => {
-        const hostAccessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
+        // order as specified in the UI
+        const hostAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
+            Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [],
+            proxyHost.access_list_ids
+        );
 
         // cleanup all old files for this host and regenerate
         await internalProxyHostAccessList.delete(proxyHost);
@@ -268,7 +272,12 @@ const internalProxyHostAccessList = {
 
         for (const location of proxyHost.locations || []) {
             if (location.access_list_type === "custom") {
-                await buildLocationFile(proxyHost, location, location.access_lists || []);
+                // order as specified in the UI
+                const locationAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
+                    location.access_lists || [],
+                    location.access_list_ids
+                );
+                await buildLocationFile(proxyHost, location, locationAccessLists);
             } else if (location.access_list_type === "global") {
                 await buildLocationFile(proxyHost, location, hostAccessLists || []);
             }
@@ -276,7 +285,7 @@ const internalProxyHostAccessList = {
     },
 
     /**
-     * Populates the access_list object in proxyHost and proxyHost.locations with the actual object
+     * Populates the access_lists object in proxyHost and proxyHost.locations with the actual object
      * data
      * @param {*} proxyHost 
      * @returns 

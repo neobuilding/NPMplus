@@ -299,21 +299,13 @@
 		"owner": {
 			"$ref": "./user-object.json"
 		},
-		"access_list": {
-			"oneOf": [
-				{
-					"type": "null",
-					"example": null
-				},
-				{
-					"type": "array",
-					"minItems": 0,
-					"items": {
-						"$ref": "./access-list-object.json"
-					}
-				}
-			],
-			"example": null
+		"access_lists": {
+			"type": "array",
+			"minItems": 0,
+			"items": {
+				"$ref": "./access-list-object.json"
+			},
+			"example": []
 		}
 	}
 }

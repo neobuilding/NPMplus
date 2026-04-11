@@ -183,7 +183,7 @@
 										"admin"
 									]
 								},
-								"access_list": null
+								"access_lists": []
 							}
 						}
 					},

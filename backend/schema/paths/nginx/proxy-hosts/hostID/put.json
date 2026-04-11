@@ -186,7 +186,7 @@
 									]
 								},
 								"certificate": null,
-								"access_list": null
+								"access_lists": []
 							}
 						}
 					},
