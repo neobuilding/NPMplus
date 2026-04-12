@@ -9,32 +9,36 @@ interface Props {
 	locations?: ProxyLocation[];
 }
 export function AccessListFormatter({ access = [], type = "public", locations = [] }: Props) {
-	const customLocationCount = locations.filter((loc) => loc.accessListType === "custom" && (loc.accessListIds || []).length > 0,).length;
-	const hasLocationAcls = customLocationCount > 0;
-	let triggerLabel = type === "custom" ? intl.formatMessage({ id: "access-list.custom" }) : intl.formatMessage({ id: "access-list.public" });
-	triggerLabel = hasLocationAcls ? `${triggerLabel} <${intl.formatMessage({ id: "column.location" })}>` : triggerLabel;
+	const hasLocationAcls = locations.filter((loc) => loc.accessListType === "custom" && (loc.accessListIds || []).length > 0).length > 0;
 
-	if (access.length === 0 && !hasLocationAcls) {
+	let triggerLabel = type === "custom" ? intl.formatMessage({ id: "access-list.custom" }) : intl.formatMessage({ id: "access-list.public" });
+
+	if (access.length === 0) {
 		return <span>{triggerLabel}</span>;
 	}
-
+	if (access.length === 1) {
+		return hasLocationAcls ? (
+			<span><strong>{access[0].name}</strong></span>
+		) : (
+			<span>{access[0].name}</span>
+		);
+	}
 	const popover = (
 		<Popover id="access-list-popover">
 			<Popover.Body>
 				{access.map((acl) => (
 					<div key={acl.id}>{acl.name}</div>
 				))}
-				{hasLocationAcls ?
-					<div>{intl.formatMessage({ id: "column.location" })}: {customLocationCount}</div> : null}
 			</Popover.Body>
 		</Popover>
 	);
 
 	return (
 		<OverlayTrigger trigger={["hover", "focus"]} placement="bottom" overlay={popover}>
-			<button type="button" className="btn btn-action btn-sm px-1">
-				{triggerLabel}
-			</button>
+				{hasLocationAcls ?
+					<span><strong>{triggerLabel}</strong></span> :
+					<span>{triggerLabel}</span>
+				}
 		</OverlayTrigger>
 	);
 }
