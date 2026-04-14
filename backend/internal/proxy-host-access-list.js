@@ -170,7 +170,7 @@ const internalProxyHostAccessList = {
 
 
     /**
-     * Updates the proxy_host_access_list database table to match the data stored in the object
+     * Updates the npmplus_proxy_host_access_list database table to match the data stored in the object
      * @param {*} trx 
      * @param {*} proxyHostId 
      * @param {*} data 
@@ -179,7 +179,7 @@ const internalProxyHostAccessList = {
         const desiredRows = internalProxyHostAccessList.getAccessListRelationRows(proxyHostId, data);
         const desiredIds = new Set(desiredRows.map((row) => row.access_list_id));
 
-        const existingRows = await trx("proxy_host_access_list")
+        const existingRows = await trx("npmplus_proxy_host_access_list")
             .where("proxy_host_id", proxyHostId)
             .select("access_list_id");
 
@@ -189,7 +189,7 @@ const internalProxyHostAccessList = {
         const idsToDelete = [...existingIds].filter((id) => !desiredIds.has(id));
 
         if (idsToInsert.length > 0) {
-            await trx("proxy_host_access_list").insert(
+            await trx("npmplus_proxy_host_access_list").insert(
                 idsToInsert.map((access_list_id) => ({
                     proxy_host_id: proxyHostId,
                     access_list_id,
@@ -198,7 +198,7 @@ const internalProxyHostAccessList = {
         }
 
         if (idsToDelete.length > 0) {
-            await trx("proxy_host_access_list")
+            await trx("npmplus_proxy_host_access_list")
                 .where("proxy_host_id", proxyHostId)
                 .whereIn("access_list_id", idsToDelete)
                 .delete();

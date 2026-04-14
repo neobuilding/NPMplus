@@ -69,7 +69,7 @@ const internalProxyHost = {
 
 					const relationRows = internalProxyHostAccessList.getAccessListRelationRows(row.id, thisData);
 					if (relationRows.length > 0) {
-						await trx("proxy_host_access_list").insert(relationRows);
+						await trx("npmplus_proxy_host_access_list").insert(relationRows);
 					}
 
 					return row;
@@ -200,7 +200,7 @@ const internalProxyHost = {
 					},
 					data,
 				);
-				
+
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
 				internalProxyHostAccessList.validateAccessLists(thisData);
@@ -328,7 +328,7 @@ const internalProxyHost = {
 								is_deleted: 1,
 							})
 							.then((patchResult) => {
-								return trx("proxy_host_access_list")
+								return trx("npmplus_proxy_host_access_list")
 									.where("proxy_host_id", row.id)
 									.delete()
 									.then(() => patchResult);

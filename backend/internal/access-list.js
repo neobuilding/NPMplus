@@ -221,10 +221,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host_access_list.proxy_host_id) as proxy_host_count"))
-			.leftJoin("proxy_host_access_list", "proxy_host_access_list.access_list_id", "access_list.id")
+			.select("access_list.*", accessListModel.raw("COUNT(npmplus_proxy_host_access_list.proxy_host_id) as proxy_host_count"))
+			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.id", "=", "proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
@@ -379,10 +379,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host_access_list.proxy_host_id) as proxy_host_count"))
-			.leftJoin("proxy_host_access_list", "proxy_host_access_list.access_list_id", "access_list.id")
+			.select("access_list.*", accessListModel.raw("COUNT(npmplus_proxy_host_access_list.proxy_host_id) as proxy_host_count"))
+			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.id", "=", "proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")

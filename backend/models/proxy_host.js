@@ -47,13 +47,13 @@ class ProxyHost extends Model {
 		}
 
 		// Default for access list type
-		if (typeof this.access_list_type === "undefined") {
-			this.access_list_type = "public";
+		if (typeof this.npmplus_access_list_type === "undefined") {
+			this.npmplus_access_list_type = "public";
 		}
 
 		// Default for access list ids
-		if (typeof this.access_list_ids === "undefined") {
-			this.access_list_ids = [];
+		if (typeof this.npmplus_access_list_ids === "undefined") {
+			this.npmplus_access_list_ids = [];
 		}
 	}
 
@@ -63,11 +63,33 @@ class ProxyHost extends Model {
 
 	$parseDatabaseJson(json) {
 		const thisJson = super.$parseDatabaseJson(json);
+		// strip the npmplus_ prefix from the parsed data and remove the prefixed records
+		if (typeof thisJson.npmplus_access_list_ids !== "undefined") {
+			thisJson.access_list_ids = thisJson.npmplus_access_list_ids;
+			delete thisJson.npmplus_access_list_ids;
+		}
+
+		if (typeof thisJson.npmplus_access_list_type !== "undefined") {
+			thisJson.access_list_type = thisJson.npmplus_access_list_type;
+			delete thisJson.npmplus_access_list_type;
+		}
+
 		return convertIntFieldsToBool(thisJson, boolFields);
 	}
 
 	$formatDatabaseJson(json) {
-		const thisJson = convertBoolFieldsToInt(json, boolFields);
+		const thisJson = convertBoolFieldsToInt({ ...json }, boolFields);
+
+		// re-add the npmplus_ prefix to the object for storing in the database
+		if (typeof thisJson.access_list_ids !== "undefined") {
+			thisJson.npmplus_access_list_ids = thisJson.access_list_ids;
+			delete thisJson.access_list_ids;
+		}
+
+		if (typeof thisJson.access_list_type !== "undefined") {
+			thisJson.npmplus_access_list_type = thisJson.access_list_type;
+			delete thisJson.access_list_type;
+		}
 		return super.$formatDatabaseJson(thisJson);
 	}
 
@@ -80,7 +102,7 @@ class ProxyHost extends Model {
 	}
 
 	static get jsonAttributes() {
-		return ["domain_names", "meta", "locations", "access_list_ids"];
+		return ["domain_names", "meta", "locations", "npmplus_access_list_ids"];
 	}
 
 	static get defaultAllowGraph() {
@@ -114,8 +136,8 @@ class ProxyHost extends Model {
 				join: {
 					from: "proxy_host.id",
 					through: {
-						from: "proxy_host_access_list.proxy_host_id",
-						to: "proxy_host_access_list.access_list_id",
+						from: "npmplus_proxy_host_access_list.proxy_host_id",
+						to: "npmplus_proxy_host_access_list.access_list_id",
 					},
 					to: "access_list.id",
 				},

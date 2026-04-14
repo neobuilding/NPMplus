@@ -15,7 +15,7 @@ class ProxyHostAccessList extends Model {
 	}
 
 	static get tableName() {
-		return "proxy_host_access_list";
+		return "npmplus_proxy_host_access_list";
 	}
 
 	static get relationMappings() {
@@ -24,7 +24,7 @@ class ProxyHostAccessList extends Model {
 				relation: Model.BelongsToOneRelation,
 				modelClass: AccessList,
 				join: {
-					from: "proxy_host_access_list.access_list_id",
+					from: "npmplus_proxy_host_access_list.access_list_id",
 					to: "access_list.id",
 				},
 				modify: (qb) => {
@@ -35,7 +35,7 @@ class ProxyHostAccessList extends Model {
 				relation: Model.BelongsToOneRelation,
 				modelClass: ProxyHostModel,
 				join: {
-					from: "proxy_host_access_list.proxy_host_id",
+					from: "npmplus_proxy_host_access_list.proxy_host_id",
 					to: "proxy_host.id",
 				},
 				modify: (qb) => {

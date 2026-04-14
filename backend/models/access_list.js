@@ -86,8 +86,8 @@ class AccessList extends Model {
 				join: {
 					from: "access_list.id",
 					through: {
-						from: "proxy_host_access_list.access_list_id",
-						to: "proxy_host_access_list.proxy_host_id",
+						from: "npmplus_proxy_host_access_list.access_list_id",
+						to: "npmplus_proxy_host_access_list.proxy_host_id",
 					},
 					to: "proxy_host.id",
 				},

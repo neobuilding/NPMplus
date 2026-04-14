@@ -15,10 +15,10 @@ const up = async (knex) => {
 		logger.info(`[${migrateName}] Migrating Up...`);
 
 		await trx.schema.alterTable("proxy_host", (proxy_host) => {
-			proxy_host.json("access_list_ids").nullable();
-			proxy_host.string("access_list_type").notNullable().defaultTo("public");
+			proxy_host.json("npmplus_access_list_ids").nullable();
+			proxy_host.string("npmplus_access_list_type").notNullable().defaultTo("public");
 		});
-		await trx.schema.createTable("proxy_host_access_list", (table) => {
+		await trx.schema.createTable("npmplus_proxy_host_access_list", (table) => {
 			table.integer("proxy_host_id").unsigned().notNullable();
 			table.integer("access_list_id").unsigned().notNullable();
 			table.primary(["proxy_host_id", "access_list_id"]);
@@ -54,8 +54,8 @@ const up = async (knex) => {
 			}
 
 			const updateData = {
-				access_list_ids: JSON.stringify(access_list_ids),
-				access_list_type
+				npmplus_access_list_ids: JSON.stringify(access_list_ids),
+				npmplus_access_list_type
 			};
 
 			if (Array.isArray(locations) && locations.length > 0) {
@@ -84,7 +84,7 @@ const up = async (knex) => {
 				.update(updateData);
 			const acl_host_rows = Object.values(acl_hosts);
 			if (acl_host_rows.length > 0) {
-				await trx("proxy_host_access_list")
+				await trx("npmplus_proxy_host_access_list")
 					.insert(acl_host_rows);
 			}
 		}
