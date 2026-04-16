@@ -1,4 +1,3 @@
-import { IconSettings } from "@tabler/icons-react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import cn from "classnames";
 import EasyModal, { type InnerModalProps } from "ez-modal-react";
