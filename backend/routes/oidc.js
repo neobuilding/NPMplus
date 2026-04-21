@@ -76,9 +76,21 @@ router
 		} catch (err) {
 			logger.error(`Callback error: ${err.message}`);
 			res.cookie("__Host-npmplus_oidc_no_redirect", "true", { secure: true, sameSite: "Strict" });
-			res.clearCookie("__Host-Http-npmplus_oidc_state");
-			res.clearCookie("__Host-Http-npmplus_oidc_nonce");
-			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier");
+			res.clearCookie("__Host-Http-npmplus_oidc_state", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_nonce", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
 			res.redirect("/");
 		}
 	});
@@ -133,16 +145,40 @@ router
 				expires: new Date(data.expires),
 			});
 
-			res.clearCookie("__Host-npmplus_oidc_no_redirect");
-			res.clearCookie("__Host-Http-npmplus_oidc_state");
-			res.clearCookie("__Host-Http-npmplus_oidc_nonce");
-			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier");
+			res.clearCookie("__Host-npmplus_oidc_no_redirect", { secure: true, sameSite: "Strict" });
+			res.clearCookie("__Host-Http-npmplus_oidc_state", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_nonce", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
 			res.redirect("/");
 		} catch (err) {
 			logger.error(`Callback error: ${err.message}`);
-			res.clearCookie("__Host-Http-npmplus_oidc_state");
-			res.clearCookie("__Host-Http-npmplus_oidc_nonce");
-			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier");
+			res.clearCookie("__Host-Http-npmplus_oidc_state", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_nonce", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
+			res.clearCookie("__Host-Http-npmplus_oidc_code_verifier", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+			});
 			res.redirect("/");
 		}
 	});

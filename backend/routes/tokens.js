@@ -41,7 +41,11 @@ router
 	 */
 	.get(jwtdecode(), async (req, res, next) => {
 		if (!req.signedCookies?.["__Host-Http-token"]) {
-			res.clearCookie("__Host-Http-token");
+			res.clearCookie("__Host-Http-token", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Strict",
+			});
 			res.cookie("__Host-npmplus_oidc_no_redirect", "true", { secure: true, sameSite: "Strict" });
 			return res.status(401).send({ expires: new Date(0).toISOString() });
 		}
@@ -62,7 +66,11 @@ router
 
 			res.status(200).send({ expires: data.expires });
 		} catch (err) {
-			res.clearCookie("__Host-Http-token");
+			res.clearCookie("__Host-Http-token", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Strict",
+			});
 			debug(logger, `${req.method.toUpperCase()} ${req.originalUrl}: ${err}`);
 			next(err);
 		}
@@ -107,7 +115,11 @@ router
 	 */
 	.delete(async (req, res, next) => {
 		try {
-			res.clearCookie("__Host-Http-token");
+			res.clearCookie("__Host-Http-token", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Strict",
+			});
 			res.cookie("__Host-npmplus_oidc_no_redirect", "true", { secure: true, sameSite: "Strict" });
 			res.status(200).send({ expires: new Date(0).toISOString() });
 		} catch (err) {

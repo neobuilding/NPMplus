@@ -19,7 +19,11 @@ export default () => {
 			res.locals.access = access;
 			next();
 		} catch {
-			res.clearCookie("__Host-Http-token");
+			res.clearCookie("__Host-Http-token", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Strict",
+			});
 			return res.status(403).json({
 				error: {
 					message: "Invalid or expired token",
