@@ -365,7 +365,10 @@ const internalProxyHostAccessList = {
         }
 
         // fallback from old column (only if needed)
-        if (proxyHost.npmplus_access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
+        if (typeof proxyHost.npmplus_access_list_type === "undefined" && 
+            proxyHost.npmplus_access_list_ids.length === 0 && 
+            proxyHost.access_list_id && 
+            proxyHost.access_list_id !== 0) {
             proxyHost.npmplus_access_list_ids = [proxyHost.access_list_id];
             proxyHost.npmplus_access_list_type = "custom";
         }
