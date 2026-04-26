@@ -38,7 +38,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		forwardScheme: "http",
 		forwardHost: "",
 		forwardPort: "" as any,
-		accessListIds: [],
+		npmplusAccessListIds: [],
 		cachingEnabled: false,
 		blockExploits: false,
 		allowWebsocketUpgrade: true,
@@ -50,7 +50,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
-		accessListType: "global",
+		npmplusAccessListType: "global",
 		id: null
 	};
 
@@ -88,7 +88,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		setFormField(newValues);
 	};
 
-	const handleAccessFieldsChange = (idx: number, changes: { accessListIds?: number[]; accessListType?: ProxyLocation["accessListType"] }) => {
+	const handleAccessFieldsChange = (idx: number, changes: { npmplusAccessListIds?: number[]; npmplusAccessListType?: ProxyLocation["npmplusAccessListType"] }) => {
 		const newValues = values.map((val: UiLocation, i: number) => {
 			if (i !== idx) { return val; }
 			return { ...val, ...changes };
@@ -236,11 +236,11 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									<T id="proxy-host.access-lists" />
 								</h4>
 								<AccessFields 
-									initialAccessListType={item?.accessListType || "global"} 
+									initialAccessListType={item?.npmplusAccessListType || "global"} 
 									location={item.path}  
-									initialAccessListIds={item?.accessListIds || []}
-									name={`locations[${idx}].accessListIds`}
-									type={`locations[${idx}].accessListType`}
+									initialAccessListIds={item?.npmplusAccessListIds || []}
+									name={`locations[${idx}].npmplusAccessListIds`}
+									type={`locations[${idx}].npmplusAccessListType`}
 									onChange={(changes) => handleAccessFieldsChange(idx, changes)}
 								/>
 							</div>

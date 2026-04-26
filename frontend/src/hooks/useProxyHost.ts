@@ -11,7 +11,7 @@ const fetchProxyHost = (id: number | "new") => {
 			domainNames: [],
 			forwardHost: "",
 			forwardPort: 0,
-			accessListIds: [],
+			npmplusAccessListIds: [],
 			certificateId: 0,
 			sslForced: false,
 			cachingEnabled: false,
@@ -35,7 +35,7 @@ const fetchProxyHost = (id: number | "new") => {
 			npmplusFancyindex: false,
 			npmplusXFrameOptions: "SAMEORIGIN",
 			npmplusAuthRequest: "none",
-			accessListType: "public"
+			npmplusAccessListType: "public"
 		} as ProxyHost);
 	}
 	return getProxyHost(id, ["owner"]);

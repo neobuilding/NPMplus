@@ -100,7 +100,7 @@ export interface ProxyLocation {
 	forwardScheme: string;
 	forwardHost: string;
 	forwardPort: number;
-	accessListIds: number[];
+	npmplusAccessListIds: number[];
 	cachingEnabled: boolean;
 	blockExploits: boolean;
 	allowWebsocketUpgrade: boolean;
@@ -113,7 +113,7 @@ export interface ProxyLocation {
 	npmplusXFrameOptions: string;
 	npmplusAuthRequest: string;
 	accessLists?: AccessList[];
-	accessListType: ProxyHost["accessListType"] | "global";
+	npmplusAccessListType: ProxyHost["npmplusAccessListType"] | "global";
 	id?: number | null;
 }
 
@@ -126,7 +126,7 @@ export interface ProxyHost {
 	forwardScheme: string;
 	forwardHost: string;
 	forwardPort: number;
-	accessListIds: number[];
+	npmplusAccessListIds: number[];
 	certificateId: number;
 	sslForced: boolean;
 	cachingEnabled: boolean;
@@ -145,7 +145,7 @@ export interface ProxyHost {
 	// Expansions:
 	owner?: User;
 	accessLists?: AccessList[];
-	accessListType: "public" | "custom";
+	npmplusAccessListType: "public" | "custom";
 	certificate?: Certificate;
 	npmplusNoindex: boolean;
 	npmplusCrowdsecAppsec: boolean;

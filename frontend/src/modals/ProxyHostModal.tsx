@@ -43,17 +43,17 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		
 		// Populate locations with global acls over here
 		// Set the unrestricted acls here (remove any data in their acl lists)
-		const globalType = values.accessListType;
-		let globalAclIds = values.accessListIds || [];
+		const globalType = values.npmplusAccessListType;
+		let globalAclIds = values.npmplusAccessListIds || [];
 		if(globalType === "public") {
 			globalAclIds = [];
 		}
 		const locations = (values.locations || []).map((loc: any) => {
 			const newLoc = { ...loc };
-			if (loc.accessListType === "global") {
-				newLoc.accessListIds = globalAclIds;
-			} else if (loc.accessListType === "public") {
-				newLoc.accessListIds = [];
+			if (loc.npmplusAccessListType === "global") {
+				newLoc.npmplusAccessListIds = globalAclIds;
+			} else if (loc.npmplusAccessListType === "public") {
+				newLoc.npmplusAccessListIds = [];
 			}
 			return newLoc;
 		});
@@ -62,7 +62,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,
-			accessListIds: globalAclIds,
+			npmplusAccessListIds: globalAclIds,
 			locations,
 			forwardPort: values.forwardPort || null,
 		};
@@ -110,8 +110,8 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							forwardScheme: data?.forwardScheme || "http",
 							forwardHost: data?.forwardHost || "",
 							forwardPort: data?.forwardPort || undefined,
-							accessListIds: data?.accessListIds || [],
-							accessListType: data?.accessListType || "public",
+							npmplusAccessListIds: data?.npmplusAccessListIds || [],
+							npmplusAccessListType: data?.npmplusAccessListType || "public",
 							cachingEnabled: data?.cachingEnabled || false,
 							blockExploits: data?.blockExploits || false,
 							allowWebsocketUpgrade: data?.allowWebsocketUpgrade || true,
@@ -324,10 +324,10 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														<T id="proxy-host.global-access-lists" />
 													</h4>
 													<AccessFields 
-														initialAccessListType={data?.accessListType || "public"} 
-														initialAccessListIds={data?.accessListIds || []} 
-														name="accessListIds"
-														type="accessListType"
+														initialAccessListType={data?.npmplusAccessListType || "public"} 
+														initialAccessListIds={data?.npmplusAccessListIds || []} 
+														name="npmplusAccessListIds"
+														type="npmplusAccessListType"
 													/>
 												</div>
 												<div className="my-3">

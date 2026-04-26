@@ -9,13 +9,13 @@ import { formatDateTime, intl, T } from "src/locale";
 
 interface Props {
 	location?: string;
-	initialAccessListType: ProxyLocation["accessListType"];
+	initialAccessListType: ProxyLocation["npmplusAccessListType"];
 	initialAccessListIds: number[];
 	name: string;
 	type: string;
 	onChange?: (next: {
-		accessListIds?: number[];
-		accessListType?: ProxyLocation["accessListType"];
+		npmplusAccessListIds?: number[];
+		npmplusAccessListType?: ProxyLocation["npmplusAccessListType"];
 	}) => void;
 }
 
@@ -29,7 +29,7 @@ interface AccessOption extends BaseOption {
 }
 
 interface AccessTypeOption extends BaseOption {
-	readonly type: ProxyLocation["accessListType"];
+	readonly type: ProxyLocation["npmplusAccessListType"];
 	readonly icon?: ReactNode;
 }
 
@@ -82,7 +82,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 		};
 	}
 
-	const createOption = (type: ProxyLocation["accessListType"]): AccessTypeOption => {
+	const createOption = (type: ProxyLocation["npmplusAccessListType"]): AccessTypeOption => {
 		if (type == "global") {
 			return {
 				icon: <IconWorld size={14} className="text-cyan" />,
@@ -132,7 +132,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const applyUpdatedValues = (newValues: number[]) => {
 		setValues(newValues);
 		setFieldValue(name, newValues);
-		onChange?.({ accessListIds: newValues });
+		onChange?.({ npmplusAccessListIds: newValues });
 	};
 
 	const onAccessListChange = (acl: AccessList, idx: number) => {
@@ -201,7 +201,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								const value = e.type;
 								setAclValue(value);
 								setFieldValue(type, value);
-								onChange?.({ accessListType: value });
+								onChange?.({ npmplusAccessListType: value });
 							}}
 						/>
 					</div>

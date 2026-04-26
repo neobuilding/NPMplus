@@ -80,7 +80,7 @@ export default function Table({
 			}),
 			columnHelper.accessor((row: any) => {
 				const accessLists = row.accessLists || [];
-				const triggerLabel = intl.formatMessage({ id: row.accessListType === "custom" ? "access-list.custom" : "access-list.public" })
+				const triggerLabel = intl.formatMessage({ id: row.npmplusAccessListType === "custom" ? "access-list.custom" : "access-list.public" })
 				if (accessLists.length === 1) {
 					return accessLists[0].name;
 				}
@@ -89,7 +89,7 @@ export default function Table({
 				id: "accessList",
 				header: intl.formatMessage({ id: "column.access" }),
 				cell: (info: any) => {
-					return <AccessListFormatter locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.accessListType} />;
+					return <AccessListFormatter locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.npmplusAccessListType} />;
 				},
 			}),
 			columnHelper.accessor(

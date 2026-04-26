@@ -5,11 +5,11 @@ import Popover from "react-bootstrap/Popover";
 
 interface Props {
 	access?: AccessList[];
-	type?: ProxyLocation["accessListType"];
+	type?: ProxyLocation["npmplusAccessListType"];
 	locations?: ProxyLocation[];
 }
 export function AccessListFormatter({ access = [], type = "public", locations = [] }: Props) {
-	const hasLocationAcls = locations.filter((loc) => loc.accessListType === "custom" && (loc.accessListIds || []).length > 0).length > 0;
+	const hasLocationAcls = locations.filter((loc) => loc.npmplusAccessListType === "custom" && (loc.npmplusAccessListIds || []).length > 0).length > 0;
 
 	let triggerLabel = type === "custom" ? intl.formatMessage({ id: "access-list.custom" }) : intl.formatMessage({ id: "access-list.public" });
 
