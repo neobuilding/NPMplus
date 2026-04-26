@@ -75,7 +75,7 @@ const internalAccessList = {
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 
-			// locations doesnt have accessList objects only IDs so populate it with the object itself
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
 			freshRow.proxy_hosts = await Promise
 				.all((freshRow.proxy_hosts || [])
 					.map((host) => {
@@ -193,7 +193,7 @@ const internalAccessList = {
 
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
-			// locations doesnt have accessList objects only IDs so populate it with the object itself
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
 			freshRow.proxy_hosts = await Promise
 				.all((freshRow.proxy_hosts || [])
 					.map((host) => {
@@ -337,7 +337,7 @@ const internalAccessList = {
 			});
 			row.proxy_hosts = affectedHosts;
 			// step 4. Regenerate configs and htpasswd files
-			// locations doesnt have accessList objects only IDs so populate it with the object itself
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
 			row.proxy_hosts = await Promise
 				.all((row.proxy_hosts || [])
 					.map((host) => {

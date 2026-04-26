@@ -13,7 +13,7 @@ interface Props {
 	name?: string;
 }
 
-// this is needed due to react possibly reindexing locations incorrectly, so ensure the accessfields get udpated correctly
+// this is needed due to react possibly reindexing locations incorrectly, so ensure the accessfields get updated correctly
 // by using a controlled index/key. This is because may reuse the component and associate an accessfield
 // with a location that was deleted
 type UiLocation = ProxyLocation & { uiKey: number };
