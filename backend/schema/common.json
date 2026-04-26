@@ -243,7 +243,10 @@
 		},
 		"access_list_ids": {
 			"type": "array",
-			"items": { "type": "number" }
+			"items": { 
+				"type": "integer",
+				"minimum": 1
+			}
 		},
 		"host_access_list_type": {
 			"type": "string",

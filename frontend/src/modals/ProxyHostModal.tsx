@@ -1,3 +1,4 @@
+import { IconSettings } from "@tabler/icons-react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import cn from "classnames";
 import EasyModal, { type InnerModalProps } from "ez-modal-react";
@@ -115,7 +116,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							blockExploits: data?.blockExploits || false,
 							allowWebsocketUpgrade: data?.allowWebsocketUpgrade || true,
 							// Locations tab
-							locations: data?.locations || [],					
+							locations: data?.locations || [],
 							// SSL tab
 							certificateId: data?.certificateId || 0,
 							sslForced: data?.sslForced || false,

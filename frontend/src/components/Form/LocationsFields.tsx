@@ -13,9 +13,10 @@ interface Props {
 	name?: string;
 }
 
-// this is needed due to react possibly reindexing locations incorrectly, so ensure the accessfields get updated correctly
-// by using a controlled index/key. This is because may reuse the component and associate an accessfield
-// with a location that was deleted
+// this is needed because React may reindex locations incorrectly, 
+// so use a controlled index/key to ensure the AccessFields get updated correctly.
+// This is because React may reuse the component and associate an AccessField
+// with a location that was deleted in the local UI
 type UiLocation = ProxyLocation & { uiKey: number };
 
 export function LocationsFields({ initialValues, name = "locations" }: Props) {

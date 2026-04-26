@@ -55,7 +55,7 @@ const up = async (knex) => {
 
 			const updateData = {
 				npmplus_access_list_ids: JSON.stringify(access_list_ids),
-				npmplus_access_list_type
+				npmplus_access_list_type: access_list_type
 			};
 
 			if (Array.isArray(locations) && locations.length > 0) {

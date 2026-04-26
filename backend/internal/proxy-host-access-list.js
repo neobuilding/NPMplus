@@ -3,6 +3,7 @@ import { access as logger } from "../logger.js";
 import errs from "../lib/error.js";
 import accessListModel from "../models/access_list.js";
 import internalAccessList from "./access-list.js";
+import internalNginx from "./nginx.js";
 
 const GENERATED_DIR = "/data/access";
 
@@ -143,7 +144,7 @@ const internalProxyHostAccessList = {
         // perform data sanitisation
         if (data.access_list_type === "custom" && Array.isArray(data.access_list_ids)) {
             data.access_list_ids.forEach((id) => {
-                if (Number.isInteger(id)) {
+                if (Number.isInteger(id) && id > 0) {
                     relationIds.add(id);
                 }
             });
@@ -154,7 +155,7 @@ const internalProxyHostAccessList = {
             data.locations.forEach((location) => {
                 if (location.access_list_type === "custom" && Array.isArray(location.access_list_ids)) {
                     location.access_list_ids.forEach((id) => {
-                        if (Number.isInteger(id)) {
+                        if (Number.isInteger(id) && id > 0) {
                             relationIds.add(id);
                         }
                     });
@@ -256,7 +257,10 @@ const internalProxyHostAccessList = {
      * Generates the output htpasswd file on the filesystem
      * @param {*} proxyHost 
      */
-    build: async (proxyHost) => {
+    build: async (host_type, proxyHost) => {
+        if (internalNginx.getFileFriendlyHostType(host_type) != "proxy_host"){
+            return
+        }
         // order as specified in the UI
         const hostAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
             Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [],

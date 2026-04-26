@@ -78,7 +78,17 @@ export default function Table({
 					return <CertificateFormatter certificate={info.row.original.certificate} />;
 				},
 			}),
-			columnHelper.accessor((row: any) => (row.accessLists?.length ? row.accessLists[0].name : "Public"), {
+			columnHelper.accessor((row: any) => {
+				const accessLists = row.accessLists || [];
+				const hasLocationAcls = (row.locations || []).some(
+					(loc: any) => loc.accessListType === "custom" && (loc.accessListIds || []).length > 0,
+				);
+				const triggerLabel = intl.formatMessage({ id: row.accessListType === "custom" ? "access-list.custom" : "access-list.public" })
+				if (accessLists.length === 1) {
+					return accessLists[0].name;
+				}
+				return triggerLabel;
+			}, {
 				id: "accessList",
 				header: intl.formatMessage({ id: "column.access" }),
 				cell: (info: any) => {
