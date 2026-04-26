@@ -83,7 +83,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	}
 
 	const createOption = (type: ProxyLocation["npmplusAccessListType"]): AccessTypeOption => {
-		if (type == "global") {
+		if (type === "global") {
 			return {
 				icon: <IconWorld size={14} className="text-cyan" />,
 				type: type,
@@ -91,7 +91,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
 			};
 		}
-		if (type == "custom") {
+		if (type === "custom") {
 			return {
 				icon: <IconLock size={14} className="text-lime" />,
 				type: type,
@@ -142,7 +142,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
-		if (newAccessOption && newAccessOption.meta.id) {
+		if (newAccessOption?.meta.id) {
 			const newValues = [...values, newAccessOption.meta.id];
 			applyUpdatedValues(newValues);
 		}
@@ -207,7 +207,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 					</div>
 				</div>
 			</div>
-			{!isLoading && !isError && aclValue == "custom" ?
+			{!isLoading && !isError && aclValue === "custom" ?
 				<>
 					{values.map((item: number, idx: number) => (
 						<div key={item ?? idx} className="input-group mb-1 shadow-none">
@@ -227,7 +227,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 									if (!e || Array.isArray(e)) return;
 									onAccessListChange(e.meta, idx);
 								}}
-								isDisabled={aclValue != "custom"}
+								isDisabled={aclValue !== "custom"}
 							/>
 							{idx > 0 ?
 								<a

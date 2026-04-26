@@ -35,9 +35,9 @@ export function AccessListFormatter({ access = [], type = "public", locations = 
 
 	return (
 		<OverlayTrigger trigger={["hover", "focus"]} placement="bottom" overlay={popover}>
-			<span tabIndex={0} role="note" aria-label={triggerLabel}>
+			<button type="button" className="btn btn-link p-0 border-0 text-decoration-none align-baseline" aria-label={triggerLabel}>
 				{hasLocationAcls ?<strong>{triggerLabel}</strong> : triggerLabel} 
-			</span> 
+			</button> 
 		</OverlayTrigger>
 	);
 }
