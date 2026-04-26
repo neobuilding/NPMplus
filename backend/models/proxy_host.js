@@ -63,33 +63,11 @@ class ProxyHost extends Model {
 
 	$parseDatabaseJson(json) {
 		const thisJson = super.$parseDatabaseJson(json);
-		// strip the npmplus_ prefix from the parsed data and remove the prefixed records
-		if (typeof thisJson.npmplus_access_list_ids !== "undefined") {
-			thisJson.access_list_ids = thisJson.npmplus_access_list_ids;
-			delete thisJson.npmplus_access_list_ids;
-		}
-
-		if (typeof thisJson.npmplus_access_list_type !== "undefined") {
-			thisJson.access_list_type = thisJson.npmplus_access_list_type;
-			delete thisJson.npmplus_access_list_type;
-		}
-
 		return convertIntFieldsToBool(thisJson, boolFields);
 	}
 
 	$formatDatabaseJson(json) {
 		const thisJson = convertBoolFieldsToInt({ ...json }, boolFields);
-
-		// re-add the npmplus_ prefix to the object for storing in the database
-		if (typeof thisJson.access_list_ids !== "undefined") {
-			thisJson.npmplus_access_list_ids = thisJson.access_list_ids;
-			delete thisJson.access_list_ids;
-		}
-
-		if (typeof thisJson.access_list_type !== "undefined") {
-			thisJson.npmplus_access_list_type = thisJson.access_list_type;
-			delete thisJson.access_list_type;
-		}
 		return super.$formatDatabaseJson(thisJson);
 	}
 

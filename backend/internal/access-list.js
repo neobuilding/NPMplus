@@ -287,10 +287,10 @@ const internalAccessList = {
 		const affectedHosts = (row.proxy_hosts || []).map((host) => {
 			const updatedHost = { ...host };
 			// check in case something crazy happened. This should never be the case, but safeguard
-			if (!Array.isArray(updatedHost.access_list_ids)) {
-				updatedHost.access_list_ids = [];
+			if (!Array.isArray(updatedHost.npmplus_access_list_ids)) {
+				updatedHost.npmplus_access_list_ids = [];
 			}
-			updatedHost.access_list_ids = updatedHost.access_list_ids.filter((id) => id !== row.id);
+			updatedHost.npmplus_access_list_ids = updatedHost.npmplus_access_list_ids.filter((id) => id !== row.id);
 			
 			// update the access_lists object (separate from the access_lists_ids)
 			if (!Array.isArray(updatedHost.access_lists)) {
@@ -298,20 +298,20 @@ const internalAccessList = {
 			}
 			updatedHost.access_lists = updatedHost.access_lists.filter((acl) => acl.id !== row.id);
 						
-			if (updatedHost.access_list_ids.length === 0) {
-				updatedHost.access_list_type = "public";
+			if (updatedHost.npmplus_access_list_ids.length === 0) {
+				updatedHost.npmplus_access_list_type = "public";
 			}
 			if (!Array.isArray(updatedHost.locations)) {
 				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
 			}
 			updatedHost.locations = updatedHost.locations.map((location) => {
 				const updatedLocation = { ...location };
-				if (!Array.isArray(updatedLocation.access_list_ids)) {
-					updatedLocation.access_list_ids = [];
+				if (!Array.isArray(updatedLocation.npmplus_access_list_ids)) {
+					updatedLocation.npmplus_access_list_ids = [];
 				}
-				updatedLocation.access_list_ids = updatedLocation.access_list_ids.filter((id) => id !== row.id);
-				if (updatedLocation.access_list_ids.length === 0 && updatedLocation.access_list_type === "custom") {
-					updatedLocation.access_list_type = "global";
+				updatedLocation.npmplus_access_list_ids = updatedLocation.npmplus_access_list_ids.filter((id) => id !== row.id);
+				if (updatedLocation.npmplus_access_list_ids.length === 0 && updatedLocation.npmplus_access_list_type === "custom") {
+					updatedLocation.npmplus_access_list_type = "global";
 				}
 				return updatedLocation;
 			});
@@ -325,8 +325,8 @@ const internalAccessList = {
 					affectedHosts.map((host) => {
 						return proxyHostModel.query(trx)
 							.patchAndFetchById(host.id, {
-								access_list_ids: host.access_list_ids,
-								access_list_type: host.access_list_type,
+								npmplus_access_list_ids: host.npmplus_access_list_ids,
+								npmplus_access_list_type: host.npmplus_access_list_type,
 								locations: host.locations,
 							})
 							.then(() => {

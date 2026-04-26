@@ -142,8 +142,8 @@ const internalProxyHostAccessList = {
         const relationIds = new Set();
 
         // perform data sanitisation
-        if (data.access_list_type === "custom" && Array.isArray(data.access_list_ids)) {
-            data.access_list_ids.forEach((id) => {
+        if (data.npmplus_access_list_type === "custom" && Array.isArray(data.npmplus_access_list_ids)) {
+            data.npmplus_access_list_ids.forEach((id) => {
                 if (Number.isInteger(id) && id > 0) {
                     relationIds.add(id);
                 }
@@ -153,8 +153,8 @@ const internalProxyHostAccessList = {
         // since locations is stored as a json, extract it and flatten it to store in the join table
         if (Array.isArray(data.locations)) {
             data.locations.forEach((location) => {
-                if (location.access_list_type === "custom" && Array.isArray(location.access_list_ids)) {
-                    location.access_list_ids.forEach((id) => {
+                if (location.npmplus_access_list_type === "custom" && Array.isArray(location.npmplus_access_list_ids)) {
+                    location.npmplus_access_list_ids.forEach((id) => {
                         if (Number.isInteger(id) && id > 0) {
                             relationIds.add(id);
                         }
@@ -223,7 +223,7 @@ const internalProxyHostAccessList = {
      * @returns 
      */
     getHostFileName: (proxyHost) => {
-        if (proxyHost.access_list_type === "custom") {
+        if (proxyHost.npmplus_access_list_type === "custom") {
             const accessLists = Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [];
             if (accessLists.length === 1) {
                 return internalAccessList.getFilename(accessLists[0]);
@@ -240,10 +240,10 @@ const internalProxyHostAccessList = {
      * @returns 
      */
     getLocationFileName: (proxyHost, location) => {
-        if (location.access_list_type === "global") {
+        if (location.npmplus_access_list_type === "global") {
             return internalProxyHostAccessList.getHostFileName(proxyHost);
         }
-        if (location.access_list_type === "custom") {
+        if (location.npmplus_access_list_type === "custom") {
             const accessLists = Array.isArray(location.access_lists) ? location.access_lists : [];
             if (accessLists.length === 1) {
                 return internalAccessList.getFilename(accessLists[0]);
@@ -264,7 +264,7 @@ const internalProxyHostAccessList = {
         // order as specified in the UI
         const hostAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
             Array.isArray(proxyHost.access_lists) ? proxyHost.access_lists : [],
-            proxyHost.access_list_ids
+            proxyHost.npmplus_access_list_ids
         );
 
         // cleanup all old files for this host and regenerate
@@ -273,14 +273,14 @@ const internalProxyHostAccessList = {
         await buildHostFile(proxyHost, hostAccessLists);
 
         for (const location of proxyHost.locations || []) {
-            if (location.access_list_type === "custom") {
+            if (location.npmplus_access_list_type === "custom") {
                 // order as specified in the UI
                 const locationAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
                     location.access_lists || [],
-                    location.access_list_ids
+                    location.npmplus_access_list_ids
                 );
                 await buildLocationFile(proxyHost, location, locationAccessLists);
-            } else if (location.access_list_type === "global") {
+            } else if (location.npmplus_access_list_type === "global") {
                 await buildLocationFile(proxyHost, location, hostAccessLists || []);
             }
         }
@@ -298,7 +298,7 @@ const internalProxyHostAccessList = {
         }
 
         const allIds = [...new Set(proxyHost.locations.flatMap((location) =>
-            location.access_list_type === "custom" && Array.isArray(location.access_list_ids) ? location.access_list_ids : [],
+            location.npmplus_access_list_type === "custom" && Array.isArray(location.npmplus_access_list_ids) ? location.npmplus_access_list_ids : [],
         ))];
 
         if (allIds.length === 0) {
@@ -318,7 +318,7 @@ const internalProxyHostAccessList = {
         const byId = new Map(rows.map((row) => [row.id, row]));
 
         proxyHost.locations = proxyHost.locations.map((location) => {
-            const ids = Array.isArray(location.access_list_ids) ? location.access_list_ids : [];
+            const ids = Array.isArray(location.npmplus_access_list_ids) ? location.npmplus_access_list_ids : [];
 
             return {
                 ...location,
@@ -338,13 +338,13 @@ const internalProxyHostAccessList = {
             return;
         }
 
-        if (proxyHost.access_list_type === "custom" && (!Array.isArray(proxyHost.access_list_ids) || proxyHost.access_list_ids.length === 0)) {
+        if (proxyHost.npmplus_access_list_type === "custom" && (!Array.isArray(proxyHost.npmplus_access_list_ids) || proxyHost.npmplus_access_list_ids.length === 0)) {
             throw new errs.ValidationError("Custom Access Lists require at least 1 access list to be specified");
         }
         if (Array.isArray(proxyHost.locations)) {
             for (const location of proxyHost.locations) {
-                if (location.access_list_type === "custom" &&
-                    (!Array.isArray(location.access_list_ids) || location.access_list_ids.length === 0)) {
+                if (location.npmplus_access_list_type === "custom" &&
+                    (!Array.isArray(location.npmplus_access_list_ids) || location.npmplus_access_list_ids.length === 0)) {
                     throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
                 }
             }
@@ -352,7 +352,7 @@ const internalProxyHostAccessList = {
     },
 
     /**
-     * used by the get/update functions of proxy_host and access_list, this sets the access_list_ids
+     * used by the get/update functions of proxy_host and access_list, this sets the npmplus_access_list_ids
      * @param {Object} proxyHost 
      * @returns {Object}
      */
@@ -360,19 +360,19 @@ const internalProxyHostAccessList = {
         if (!proxyHost) { return proxyHost; }
 
         // ensure array exists
-        if (!Array.isArray(proxyHost.access_list_ids)) {
-            proxyHost.access_list_ids = [];
+        if (!Array.isArray(proxyHost.npmplus_access_list_ids)) {
+            proxyHost.npmplus_access_list_ids = [];
         }
 
         // fallback from old column (only if needed)
-        if (proxyHost.access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
-            proxyHost.access_list_ids = [proxyHost.access_list_id];
-            proxyHost.access_list_type = "custom";
+        if (proxyHost.npmplus_access_list_ids.length === 0 && proxyHost.access_list_id && proxyHost.access_list_id !== 0) {
+            proxyHost.npmplus_access_list_ids = [proxyHost.access_list_id];
+            proxyHost.npmplus_access_list_type = "custom";
         }
 
         // ensure type exists
-        if (!proxyHost.access_list_type) {
-            proxyHost.access_list_type = "public";
+        if (!proxyHost.npmplus_access_list_type) {
+            proxyHost.npmplus_access_list_type = "public";
         }
 
         if (Array.isArray(proxyHost.locations)) {
@@ -387,15 +387,15 @@ const internalProxyHostAccessList = {
 
                 const accessListIds = Array.isArray(location.accessListIds)
                     ? location.accessListIds
-                    : Array.isArray(location.access_list_ids)
-                        ? location.access_list_ids : [];
-                const accessListType = location.accessListType || location.access_list_type || "global";
+                    : Array.isArray(location.npmplus_access_list_ids)
+                        ? location.npmplus_access_list_ids : [];
+                const accessListType = location.accessListType || location.npmplus_access_list_type || "global";
                 const { accessListIds: _accessListIds, accessListType: _accessListType, ...otherParameters } = location;
 
                 return {
                     ...otherParameters,
-                    access_list_ids: accessListIds,
-                    access_list_type: accessListType,
+                    npmplus_access_list_ids: accessListIds,
+                    npmplus_access_list_type: accessListType,
                 };
             });
         }

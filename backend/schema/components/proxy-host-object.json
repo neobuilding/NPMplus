@@ -9,8 +9,8 @@
 		"domain_names",
 		"forward_host",
 		"forward_port",
-		"access_list_ids",
-		"access_list_type",
+		"npmplus_access_list_ids",
+		"npmplus_access_list_type",
 		"certificate_id",
 		"ssl_forced",
 		"caching_enabled",
@@ -65,11 +65,11 @@
 			"maximum": 65535,
 			"example": 8080
 		},
-		"access_list_ids":{
-			"$ref": "../common.json#/properties/access_list_ids"
+		"npmplus_access_list_ids":{
+			"$ref": "../common.json#/properties/npmplus_access_list_ids"
 		},
-		"access_list_type": {
-			"$ref": "../common.json#/properties/host_access_list_type"
+		"npmplus_access_list_type": {
+			"$ref": "../common.json#/properties/npmplus_host_access_list_type"
 		},
 		"certificate_id": {
 			"$ref": "../common.json#/properties/certificate_id"
@@ -174,8 +174,8 @@
 					"forward_host",
 					"forward_port",
 					"path",
-					"access_list_ids",
-					"access_list_type"
+					"npmplus_access_list_ids",
+					"npmplus_access_list_type"
 				],
 				"additionalProperties": false,
 				"properties": {
@@ -256,11 +256,11 @@
 					"npmplus_location_config": {
 						"type": "string"
 					},
-					"access_list_ids":{
-						"$ref": "../common.json#/properties/access_list_ids"
+					"npmplus_access_list_ids":{
+						"$ref": "../common.json#/properties/npmplus_access_list_ids"
 					},
-					"access_list_type": {
-						"$ref": "../common.json#/properties/location_access_list_type"
+					"npmplus_access_list_type": {
+						"$ref": "../common.json#/properties/npmplus_location_access_list_type"
 					}
 				}
 			},
@@ -270,8 +270,8 @@
 					"forward_scheme": "http",
 					"forward_host": "example.com",
 					"forward_port": 80,
-					"access_list_ids":[0, 1],
-					"access_list_type": "custom"
+					"npmplus_access_list_ids":[0, 1],
+					"npmplus_access_list_type": "custom"
 				}
 			]
 		},

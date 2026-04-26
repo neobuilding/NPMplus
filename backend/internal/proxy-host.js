@@ -26,8 +26,8 @@ const internalProxyHost = {
 		if (createCertificate) {
 			delete thisData.certificate_id;
 		}
-		data.access_list_ids = data.access_list_ids || [];
-		data.access_list_type = data.access_list_type || "public";
+		data.npmplus_access_list_ids = data.npmplus_access_list_ids || [];
+		data.npmplus_access_list_type = data.npmplus_access_list_type || "public";
 		return access
 			.can("proxy_hosts:create", thisData)
 			.then(() => {

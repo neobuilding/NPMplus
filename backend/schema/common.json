@@ -241,21 +241,21 @@
 				}
 			]
 		},
-		"access_list_ids": {
+		"npmplus_access_list_ids": {
 			"type": "array",
 			"items": { 
 				"type": "integer",
 				"minimum": 1
 			}
 		},
-		"host_access_list_type": {
+		"npmplus_host_access_list_type": {
 			"type": "string",
 			"enum": [
 				"public",
 				"custom"
 			]
 		},
-		"location_access_list_type": {
+		"npmplus_location_access_list_type": {
 			"type": "string",
 			"enum": [
 				"global",

@@ -29,15 +29,15 @@ const up = async (knex) => {
 		const rows = await trx("proxy_host").select("id", "access_list_id", "locations");
 
 		for (const row of rows) {
-			let access_list_ids = [];
-			let access_list_type = "public";
+			let npmplus_access_list_ids = [];
+			let npmplus_access_list_type = "public";
 			let acl_hosts = {};
 
 			// 0 was used for public but now its no longer used for that
 			// so ignore 0
 			if (row.access_list_id && row.access_list_id !== 0) {
-				access_list_ids = [row.access_list_id];
-				access_list_type = "custom";
+				npmplus_access_list_ids = [row.access_list_id];
+				npmplus_access_list_type = "custom";
 				acl_hosts[row.id + "_" + row.access_list_id] = {
 					proxy_host_id: row.id,
 					access_list_id: row.access_list_id,
@@ -54,21 +54,21 @@ const up = async (knex) => {
 			}
 
 			const updateData = {
-				npmplus_access_list_ids: JSON.stringify(access_list_ids),
-				npmplus_access_list_type: access_list_type
+				npmplus_access_list_ids: JSON.stringify(npmplus_access_list_ids),
+				npmplus_access_list_type: npmplus_access_list_type
 			};
 
 			if (Array.isArray(locations) && locations.length > 0) {
 				const migratedLocations = locations.map((loc) => ({
 					...loc,
-					access_list_ids: Array.isArray(loc.access_list_ids) ? loc.access_list_ids : [],
-					access_list_type: loc.access_list_type ?? "global",
+					npmplus_access_list_ids: Array.isArray(loc.npmplus_access_list_ids) ? loc.npmplus_access_list_ids : [],
+					npmplus_access_list_type: loc.npmplus_access_list_type ?? "global",
 				}));
 				let count = 0;
 				migratedLocations.forEach(location => {
 					location.id = count++;
-					if (Array.isArray(location.access_list_ids)) {
-						location.access_list_ids.forEach(aclId => {
+					if (Array.isArray(location.npmplus_access_list_ids)) {
+						location.npmplus_access_list_ids.forEach(aclId => {
 							acl_hosts[row.id + "_" + aclId] = {
 								proxy_host_id: row.id,
 								access_list_id: aclId,
