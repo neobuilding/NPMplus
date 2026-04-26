@@ -89,7 +89,7 @@ export default function Table({
 				id: "accessList",
 				header: intl.formatMessage({ id: "column.access" }),
 				cell: (info: any) => {
-					return <AccessListFormatter locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.npmplusAccessListType} />;
+					return <AccessListFormatter proxyHostId={info.row.original.id} locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.npmplusAccessListType} />;
 				},
 			}),
 			columnHelper.accessor(
