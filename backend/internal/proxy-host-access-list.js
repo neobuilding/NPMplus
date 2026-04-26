@@ -258,7 +258,7 @@ const internalProxyHostAccessList = {
      * @param {*} proxyHost 
      */
     build: async (host_type, proxyHost) => {
-        if (internalNginx.getFileFriendlyHostType(host_type) != "proxy_host"){
+        if (internalNginx.getFileFriendlyHostType(host_type) !== "proxy_host"){
             return
         }
         // order as specified in the UI

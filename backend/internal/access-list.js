@@ -410,7 +410,6 @@ const internalAccessList = {
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
 				}
-				return true;
 			});
 		}
 		return rows;

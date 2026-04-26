@@ -38,7 +38,7 @@ const up = async (knex) => {
 			if (row.access_list_id && row.access_list_id !== 0) {
 				npmplus_access_list_ids = [row.access_list_id];
 				npmplus_access_list_type = "custom";
-				acl_hosts[row.id + "_" + row.access_list_id] = {
+				acl_hosts[`${row.id}_${row.access_list_id}`] = {
 					proxy_host_id: row.id,
 					access_list_id: row.access_list_id,
 				};
@@ -69,7 +69,7 @@ const up = async (knex) => {
 					location.id = count++;
 					if (Array.isArray(location.npmplus_access_list_ids)) {
 						location.npmplus_access_list_ids.forEach(aclId => {
-							acl_hosts[row.id + "_" + aclId] = {
+							acl_hosts[`${row.id}_${aclId}`] = {
 								proxy_host_id: row.id,
 								access_list_id: aclId,
 							};
