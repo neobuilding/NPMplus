@@ -287,6 +287,39 @@ const internalProxyHostAccessList = {
     },
 
     /**
+     * Masks the access lists in the locations and the proxy host
+     * @param {*} proxyHost 
+     * @returns 
+     */
+     maskAccessListItems: (proxyHost) => {
+        if (!proxyHost) {
+            return proxyHost;
+        }
+
+        const maskAccessList = (accessList) => internalAccessList.maskItems({
+            ...accessList,
+            items: Array.isArray(accessList.items)
+                ? accessList.items.map((item) => ({ ...item }))
+                : accessList.items
+        });
+
+        if (Array.isArray(proxyHost.access_lists)) {
+            proxyHost.access_lists = proxyHost.access_lists.map(maskAccessList);
+        }
+
+        if (Array.isArray(proxyHost.locations)) {
+            proxyHost.locations = proxyHost.locations.map((location) => ({
+                ...location,
+                access_lists: Array.isArray(location.access_lists)
+                    ? location.access_lists.map(maskAccessList)
+                    : location.access_lists,
+            }));
+        }
+
+        return proxyHost;
+    },
+
+    /**
      * Populates the access_lists object in proxyHost and proxyHost.locations with the actual object
      * data
      * @param {*} proxyHost 

@@ -16,10 +16,10 @@ export function AccessListFormatter({ proxyHostId, access = [], type = "public",
 	let triggerLabel = type === "custom" ? intl.formatMessage({ id: "access-list.custom" }) : intl.formatMessage({ id: "access-list.public" });
 
 	if (access.length === 1) {
-		triggerLabel =  hasLocationAcls ? access[0].name : access[0].name;
+		triggerLabel = access[0].name;
 	}
 	const popover = (
-		<Popover id="access-list-popover">
+		<Popover id={`access-list-popover-${proxyHostId}`}>
 			<Popover.Body>
 				{access.map((acl) => (
 					<div key={acl.id}>{acl.name}</div>

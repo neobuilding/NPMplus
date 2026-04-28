@@ -75,8 +75,8 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				{
 					users: item?.items?.length,
 					rules: item?.clients?.length,
-					date: item?.createdOn ? formatDateTime(item?.createdOn, locale) : "N/A",
-				},
+					date: item?.createdOn ? formatDateTime(item?.createdOn, locale) : "N/A"
+				}
 			),
 			meta: item
 		};
@@ -88,7 +88,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				icon: <IconWorld size={14} className="text-cyan" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.global" }),
-				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
+				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" })
 			};
 		}
 		if (type === "custom") {
@@ -96,14 +96,14 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				icon: <IconLock size={14} className="text-lime" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.custom" }),
-				subLabel: intl.formatMessage({ id: "access-list.custom.subtitle" }),
+				subLabel: intl.formatMessage({ id: "access-list.custom.subtitle" })
 			};
 		}
 		return {
 			icon: <IconLockOpen2 size={14} className="text-red" />,
 			type: type,
 			label: intl.formatMessage({ id: "access-list.public" }),
-			subLabel: intl.formatMessage({ id: "access-list.public.subtitle" }),
+			subLabel: intl.formatMessage({ id: "access-list.public.subtitle" })
 		};
 
 	}
@@ -111,10 +111,10 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const defaultOptions: AccessOption[] =
 		data?.map(createDefaultItem) || [];
 	const valuesSet = new Set(values?.map((item: number) => (item || 0)) || []);
-	const options = defaultOptions.filter((option: AccessOption, _) => !valuesSet.has(option.value));
+	const options = defaultOptions.filter((option: AccessOption) => !valuesSet.has(option.value));
 
 	const typeOptions = (): AccessTypeOption[] => {
-		let ret = [];
+		const ret: AccessTypeOption[] = [];
 		if (!isLoading && !isError && location !== undefined) {
 			ret.push(createOption("global"));
 		}
@@ -171,7 +171,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	}
 
 	const handleRemove = (aclId: number) => {
-		const newValues = values.filter((id: number, _) => id !== aclId);
+		const newValues = values.filter((id: number) => id !== aclId);
 		applyUpdatedValues(newValues);
 	}
 

@@ -122,7 +122,7 @@ const internalProxyHost = {
 						meta: thisData,
 					})
 					.then(() => {
-						return row;
+						return internalProxyHostAccessList.maskAccessListItems(row);
 					});
 			});
 	},
@@ -237,18 +237,19 @@ const internalProxyHost = {
 						expand: ["owner", "certificate", "access_lists.[clients,items]"],
 					})
 					.then((row) => {
-							const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(row);
-							return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
-						})
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(row);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					})
 					.then((row) => {
 						if (!row.enabled) {
 							// No need to add nginx config if host is disabled
-							return row;
+							return internalProxyHostAccessList.maskAccessListItems(row);
 						}
 						// Configure nginx
 						return internalNginx.configure(proxyHostModel, "proxy_host", row).then((new_meta) => {
 							row.meta = new_meta;
-							return _.omit(internalHost.cleanRowCertificateMeta(row), omissions());
+							const cleanedRow = _.omit(internalHost.cleanRowCertificateMeta(row), omissions());
+							return internalProxyHostAccessList.maskAccessListItems(cleanedRow);
 						});
 					});
 			});
