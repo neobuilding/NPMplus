@@ -13,7 +13,7 @@ interface Props {
 	name?: string;
 }
 
-// this is needed because React may reindex locations incorrectly, 
+// this is needed because React may reindex locations incorrectly,
 // so use a controlled index/key to ensure the AccessFields get updated correctly.
 // This is because React may reuse the component and associate an AccessField
 // with a location that was deleted in the local UI
@@ -235,9 +235,9 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 								<h4 className="py-2">
 									<T id="proxy-host.access-lists" />
 								</h4>
-								<AccessFields 
-									initialAccessListType={item?.npmplusAccessListType || "global"} 
-									location={item.path}  
+								<AccessFields
+									initialAccessListType={item?.npmplusAccessListType || "global"}
+									location={item.path}
 									initialAccessListIds={item?.npmplusAccessListIds || []}
 									name={`locations[${idx}].npmplusAccessListIds`}
 									type={`locations[${idx}].npmplusAccessListType`}

@@ -297,7 +297,7 @@ const internalAccessList = {
 				updatedHost.access_lists = [];
 			}
 			updatedHost.access_lists = updatedHost.access_lists.filter((acl) => acl.id !== row.id);
-						
+
 			if (updatedHost.npmplus_access_list_ids.length === 0) {
 				updatedHost.npmplus_access_list_type = "public";
 			}
@@ -470,9 +470,9 @@ const internalAccessList = {
 	},
 
 	/**
-	 * 
-	 * @param {*} htpasswdFile 
-	 * @param {*} items 
+	 *
+	 * @param {*} htpasswdFile
+	 * @param {*} items
 	 */
 	writeData: async (htpasswdFile, items) => {
 		await writeFile(htpasswdFile, "", { encoding: "utf8" });
@@ -509,7 +509,7 @@ const internalAccessList = {
 
 		await rm(htpasswdFile, { force: true });
 		await internalAccessList.writeData(htpasswdFile, list.items);
-		
+
 		logger.success(`Built Access file #${list.id} for: ${list.name}`);
 	},
 };

@@ -45,14 +45,12 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		// Set the unrestricted acls here (remove any data in their acl lists)
 		const globalType = values.npmplusAccessListType;
 		let globalAclIds = values.npmplusAccessListIds || [];
-		if(globalType === "public") {
+		if (globalType === "public") {
 			globalAclIds = [];
 		}
 		const locations = (values.locations || []).map((loc: any) => {
 			const newLoc = { ...loc };
-			if (loc.npmplusAccessListType === "global") {
-				newLoc.npmplusAccessListIds = globalAclIds;
-			} else if (loc.npmplusAccessListType === "public") {
+			if (loc.npmplusAccessListType === "global" || loc.npmplusAccessListType === "public") {
 				newLoc.npmplusAccessListIds = [];
 			}
 			return newLoc;
@@ -323,9 +321,9 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 													<h4 className="py-2">
 														<T id="proxy-host.global-access-lists" />
 													</h4>
-													<AccessFields 
-														initialAccessListType={data?.npmplusAccessListType || "public"} 
-														initialAccessListIds={data?.npmplusAccessListIds || []} 
+													<AccessFields
+														initialAccessListType={data?.npmplusAccessListType || "public"}
+														initialAccessListIds={data?.npmplusAccessListIds || []}
 														name="npmplusAccessListIds"
 														type="npmplusAccessListType"
 													/>

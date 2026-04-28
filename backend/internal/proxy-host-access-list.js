@@ -28,8 +28,8 @@ const getHostFilePrefix = (proxyHost) => {
 
 /**
  *
- * @param {*} proxyHost 
- * @returns 
+ * @param {*} proxyHost
+ * @returns
  */
 const getProxyHostFilename = (proxyHost) => {
     return `${GENERATED_DIR}/${getHostFilePrefix(proxyHost)}`;
@@ -258,7 +258,7 @@ const internalProxyHostAccessList = {
      * @param {*} proxyHost 
      */
     build: async (host_type, proxyHost) => {
-        if (internalNginx.getFileFriendlyHostType(host_type) !== "proxy_host"){
+        if (internalNginx.getFileFriendlyHostType(host_type) !== "proxy_host") {
             return
         }
         // order as specified in the UI
@@ -370,27 +370,23 @@ const internalProxyHostAccessList = {
             return;
         }
 
-        if (proxyHost.npmplus_access_list_type === "custom") {
-            if (!Array.isArray(proxyHost.npmplus_access_list_ids) || proxyHost.npmplus_access_list_ids.length === 0) {
-                throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+        const validateCustomSelection = (accessListType, accessListIds) => {
+            if (accessListType === "custom") {
+                if (!Array.isArray(accessListIds) || accessListIds.length === 0) {
+                    throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+                }
+                // This should never happen unless a different frontend is used. Proper deduplication happens later
+                if (new Set(accessListIds).size !== accessListIds.length) {
+                    throw new errs.ValidationError(`Duplicate Access Lists Found`);
+                }
             }
-            // This should never happen unless a different frontend is used. Proper deduplication happens later
-            if (new Set(proxyHost.npmplus_access_list_ids).size !== proxyHost.npmplus_access_list_ids.length) {
-                throw new errs.ValidationError(`Duplicate Access Lists Found`);
-            }
-        }
+        };
+
+        validateCustomSelection(proxyHost.npmplus_access_list_type, proxyHost.npmplus_access_list_ids)
 
         if (Array.isArray(proxyHost.locations)) {
             for (const location of proxyHost.locations) {
-                if (location.npmplus_access_list_type === "custom") {
-                    if (!Array.isArray(location.npmplus_access_list_ids) || location.npmplus_access_list_ids.length === 0) {
-                        throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
-                    }
-                    // This should never happen unless a different frontend is used. Proper deduplication happens later
-                    if (new Set(location.npmplus_access_list_ids).size !== location.npmplus_access_list_ids.length) {
-                        throw new errs.ValidationError(`Duplicate Access Lists Found`);
-                    }
-                }
+                validateCustomSelection(location.npmplus_access_list_type, location.npmplus_access_list_ids)
             }
         }
     },
@@ -409,9 +405,9 @@ const internalProxyHostAccessList = {
         }
 
         // fallback from old column (only if needed)
-        if (typeof proxyHost.npmplus_access_list_type === "undefined" && 
-            proxyHost.npmplus_access_list_ids.length === 0 && 
-            proxyHost.access_list_id && 
+        if (typeof proxyHost.npmplus_access_list_type === "undefined" &&
+            proxyHost.npmplus_access_list_ids.length === 0 &&
+            proxyHost.access_list_id &&
             proxyHost.access_list_id !== 0) {
             proxyHost.npmplus_access_list_ids = [proxyHost.access_list_id];
             proxyHost.npmplus_access_list_type = "custom";
@@ -420,6 +416,7 @@ const internalProxyHostAccessList = {
         // ensure type exists
         if (!proxyHost.npmplus_access_list_type) {
             proxyHost.npmplus_access_list_type = "public";
+            proxyHost.npmplus_access_list_ids = [];
         }
 
         if (Array.isArray(proxyHost.locations)) {
@@ -432,11 +429,11 @@ const internalProxyHostAccessList = {
                     location.id = count++;
                 }
 
-                const accessListIds = Array.isArray(location.accessListIds)
+                const accessListType = location.accessListType || location.npmplus_access_list_type || "global";
+                const accessListIds = accessListType !== "custom" ? [] : Array.isArray(location.accessListIds)
                     ? location.accessListIds
                     : Array.isArray(location.npmplus_access_list_ids)
                         ? location.npmplus_access_list_ids : [];
-                const accessListType = location.accessListType || location.npmplus_access_list_type || "global";
                 const { accessListIds: _accessListIds, accessListType: _accessListType, ...otherParameters } = location;
 
                 return {

@@ -27,7 +27,7 @@ const internalNginx = {
 	 */
 	configure: async (model, host_type, host) => {
 		let combined_meta = {};
-		
+
 		await internalProxyHostAccessList.build(host_type, host);
 		await internalNginx.deleteConfig(host_type, host);
 		await internalNginx.generateConfig(host_type, host);

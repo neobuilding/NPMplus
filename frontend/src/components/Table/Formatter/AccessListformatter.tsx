@@ -28,22 +28,22 @@ export function AccessListFormatter({ proxyHostId, access = [], type = "public",
 		</Popover>
 	);
 
-	const button =  (
-			<button
+	const button = (
+		<button
 			type="button"
 			className="btn btn-link p-0 border-0 text-decoration-none align-baseline"
 			aria-label={triggerLabel}
 			onClick={(e) => {
-					e.preventDefault();
-					if (access.length === 1){
-						showAccessListModal(access[0].id || 0);
-					}else{
-						showProxyHostModal(proxyHostId);
-					}
-				}}
-			>
-				{hasLocationAcls ?<strong>{triggerLabel}</strong> : triggerLabel} 
-			</button> 
+				e.preventDefault();
+				if (access.length === 1) {
+					showAccessListModal(access[0].id || 0);
+				} else {
+					showProxyHostModal(proxyHostId);
+				}
+			}}
+		>
+			{hasLocationAcls ? <strong>{triggerLabel}</strong> : triggerLabel}
+		</button>
 	);
 	return access.length > 1 ? (
 		<OverlayTrigger trigger={["hover", "focus"]} placement="bottom" overlay={popover}>
