@@ -215,8 +215,7 @@ const internalProxyHost = {
 									.then(() => { return patchResult });
 							});
 					})
-					.then(utils.omitRow(omissions()))
-					.then((saved_row) => {
+					.then(() => {
 						// Add to audit log
 						return internalAuditLog
 							.add(access, {
@@ -224,9 +223,6 @@ const internalProxyHost = {
 								object_type: "proxy-host",
 								object_id: row.id,
 								meta: thisData,
-							})
-							.then(() => {
-								return saved_row;
 							});
 					});
 			})
