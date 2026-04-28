@@ -88,7 +88,7 @@ const up = async (knex) => {
 					.insert(acl_host_rows);
 			}
 		}
-		
+
 		logger.info(`[${migrateName}] proxy_host Table altered`);
 	});
 };

@@ -37,7 +37,7 @@ const getProxyHostFilename = (proxyHost) => {
 
 /**
  *
- * @param {*} proxyHost 
+ * @param {*} proxyHost
  * @param {*} location 
  * @returns 
  */
@@ -62,10 +62,10 @@ const writeHtpasswdFile = async (filename, items, label) => {
 };
 
 /**
- * 
- * @param {*} proxyHost 
- * @param {*} accessLists 
- * @returns 
+ *
+ * @param {*} proxyHost
+ * @param {*} accessLists
+ * @returns
  */
 const buildHostFile = async (proxyHost, accessLists) => {
     if (accessLists.length < 2) { // if size is 1 then use the default acl file. If empty, nothing to generate
@@ -255,7 +255,7 @@ const internalProxyHostAccessList = {
 
     /**
      * Generates the output htpasswd file on the filesystem
-     * @param {*} proxyHost 
+     * @param {*} proxyHost
      */
     build: async (host_type, proxyHost) => {
         if (internalNginx.getFileFriendlyHostType(host_type) !== "proxy_host") {
