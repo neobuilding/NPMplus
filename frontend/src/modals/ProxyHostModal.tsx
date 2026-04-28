@@ -41,7 +41,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		setIsSubmitting(true);
 		setErrorMsg(null);
 
-		// Populate locations with global acls over here
 		// Set the unrestricted acls here (remove any data in their acl lists)
 		const globalType = values.npmplusAccessListType;
 		let globalAclIds = values.npmplusAccessListIds || [];

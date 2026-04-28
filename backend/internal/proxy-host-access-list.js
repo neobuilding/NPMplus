@@ -76,7 +76,7 @@ const buildHostFile = async (proxyHost, accessLists) => {
 
     if (!effectiveAccess.items.length) {
         await rm(filename, { force: true });
-        return; // dont create an empty file
+        return; // don't create an empty file
     }
     await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id}`);
 };
@@ -97,7 +97,7 @@ const buildLocationFile = async (proxyHost, location, accessLists) => {
 
     if (!effectiveAccess.items.length) {
         await rm(filename, { force: true });
-        return; // dont create an empty file
+        return; // don't create an empty file
     }
     await writeHtpasswdFile(filename, effectiveAccess.items, `proxy host #${proxyHost.id} location #${location.id}`);
 };
