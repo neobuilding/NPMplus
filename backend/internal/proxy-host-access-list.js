@@ -27,7 +27,7 @@ const getHostFilePrefix = (proxyHost) => {
 };
 
 /**
- * 
+ *
  * @param {*} proxyHost 
  * @returns 
  */
@@ -36,7 +36,7 @@ const getProxyHostFilename = (proxyHost) => {
 };
 
 /**
- * 
+ *
  * @param {*} proxyHost 
  * @param {*} location 
  * @returns 
@@ -49,7 +49,7 @@ const findHostFiles = async (proxyHost) => {
     const prefix = getHostFilePrefix(proxyHost);
     const entries = await readdir(GENERATED_DIR, { withFileTypes: true });
 
-    return entries.filter((entry) => entry.isFile() && entry.name.startsWith(prefix)).map((entry) => `${GENERATED_DIR}/${entry.name}`);
+    return entries.filter((entry) => entry.isFile() && (entry.name === prefix || entry.name.startsWith(`${prefix}-`))).map((entry) => `${GENERATED_DIR}/${entry.name}`);
 };
 
 const writeHtpasswdFile = async (filename, items, label) => {

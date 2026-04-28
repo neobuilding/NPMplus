@@ -267,7 +267,7 @@ const internalAccessList = {
 		await access.can("access_lists:delete", data.id);
 		const row = await internalAccessList.get(access, {
 			id: data.id,
-			expand: ["proxy_hosts.[access_lists.[clients,items]]", "items", "clients"],
+			expand: ["proxy_hosts.[certificate, access_lists.[clients,items]]", "items", "clients"],
 		});
 
 		if (!row?.id) {
@@ -291,7 +291,7 @@ const internalAccessList = {
 				updatedHost.npmplus_access_list_ids = [];
 			}
 			updatedHost.npmplus_access_list_ids = updatedHost.npmplus_access_list_ids.filter((id) => id !== row.id);
-			
+
 			// update the access_lists object (separate from the access_lists_ids)
 			if (!Array.isArray(updatedHost.access_lists)) {
 				updatedHost.access_lists = [];
@@ -300,6 +300,10 @@ const internalAccessList = {
 						
 			if (updatedHost.npmplus_access_list_ids.length === 0) {
 				updatedHost.npmplus_access_list_type = "public";
+			}
+			// locations can be null specified by the schema
+			if(updatedHost.locations == null){
+				updatedHost.locations = []
 			}
 			if (!Array.isArray(updatedHost.locations)) {
 				throw new errs.ConfigurationError("Invalid location structure. Expected an array");

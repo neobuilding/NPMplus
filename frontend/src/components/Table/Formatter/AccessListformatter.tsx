@@ -29,9 +29,9 @@ export function AccessListFormatter({ proxyHostId, access = [], type = "public",
 	);
 
 	const button =  (
-			<button 
-			type="button" 
-			className="btn btn-link p-0 border-0 text-decoration-none align-baseline" 
+			<button
+			type="button"
+			className="btn btn-link p-0 border-0 text-decoration-none align-baseline"
 			aria-label={triggerLabel}
 			onClick={(e) => {
 					e.preventDefault();
