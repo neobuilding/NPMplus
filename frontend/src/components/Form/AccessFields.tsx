@@ -214,7 +214,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 							<Select<AccessOption, false>
 								className="react-select-container col-md-8 mb-1"
 								classNamePrefix="react-select"
-								value={defaultOptions.find((o) => o.value === item) || findFirstAvailableOption()}
+								value={defaultOptions.find((o) => o.value === item) ?? null}
 								options={options}
 								components={{ Option }}
 								styles={{

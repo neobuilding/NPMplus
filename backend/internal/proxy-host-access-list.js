@@ -365,11 +365,11 @@ const internalProxyHostAccessList = {
      * @param {*} proxyHost 
      * @returns 
      */
-    validateAccessLists(proxyHost) {
+    validateAccessLists: async (proxyHost) => {
         if (!proxyHost) {
             return;
         }
-
+        const aclIds = new Set(); // make sure no ACLs are being submitted that have been deleted
         const validateCustomSelection = (accessListType, accessListIds) => {
             if (accessListType === "custom") {
                 if (!Array.isArray(accessListIds) || accessListIds.length === 0) {
@@ -379,14 +379,31 @@ const internalProxyHostAccessList = {
                 if (new Set(accessListIds).size !== accessListIds.length) {
                     throw new errs.ValidationError(`Duplicate Access Lists Found`);
                 }
+                for (const id of accessListIds) {
+                    aclIds.add(id);
+                } 
             }
         };
 
         validateCustomSelection(proxyHost.npmplus_access_list_type, proxyHost.npmplus_access_list_ids)
-
         if (Array.isArray(proxyHost.locations)) {
             for (const location of proxyHost.locations) {
-                validateCustomSelection(location.npmplus_access_list_type, location.npmplus_access_list_ids)
+                validateCustomSelection(location.npmplus_access_list_type, location.npmplus_access_list_ids);
+            }
+        }
+        // make sure no ACLs that are being uploaded have been soft deleted
+        if (aclIds.size > 0) {
+            const rows = await accessListModel
+                .query()
+                .whereIn("id", [...aclIds])
+                .andWhere("is_deleted", 0)
+                .select("id");
+
+            const validIds = new Set(rows.map((row) => row.id));
+            const invalidIds = [...aclIds].filter((id) => !validIds.has(id));
+
+            if (invalidIds.length > 0) {
+                throw new errs.ValidationError("One or more selected Access Lists no longer exist");
             }
         }
     },

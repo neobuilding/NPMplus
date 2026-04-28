@@ -48,7 +48,7 @@ const internalProxyHost = {
 					});
 				});
 			})
-			.then(() => {
+			.then(async () => {
 				// At this point the domains should have been checked
 				thisData.owner_user_id = access.token.getUserId(1);
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData);
@@ -63,7 +63,7 @@ const internalProxyHost = {
 					thisData.npmplus_location_config = "";
 				}
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
-				internalProxyHostAccessList.validateAccessLists(thisData);
+				await internalProxyHostAccessList.validateAccessLists(thisData);
 				return proxyHostModel.transaction(async (trx) => {
 					const row = await proxyHostModel.query(trx).insertAndFetch(thisData);
 
@@ -191,7 +191,7 @@ const internalProxyHost = {
 				}
 				return row;
 			})
-			.then((row) => {
+			.then(async (row) => {
 				// Add domain_names to the data in case it isn't there, so that the audit log renders correctly. The order is important here.
 				thisData = _.assign(
 					{},
@@ -203,7 +203,7 @@ const internalProxyHost = {
 
 				thisData = internalHost.cleanSslHstsData(createCertificate, thisData, row);
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
-				internalProxyHostAccessList.validateAccessLists(thisData);
+				await internalProxyHostAccessList.validateAccessLists(thisData);
 				return proxyHostModel
 					.transaction(async (trx) => {
 						return proxyHostModel
