@@ -327,12 +327,6 @@ const internalProxyHost = {
 							.where("id", row.id)
 							.patch({
 								is_deleted: 1,
-							})
-							.then((patchResult) => {
-								return trx("npmplus_proxy_host_access_list")
-									.where("proxy_host_id", row.id)
-									.delete()
-									.then(() => patchResult);
 							});
 					})
 					.then(() => {

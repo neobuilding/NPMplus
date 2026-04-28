@@ -273,6 +273,7 @@ const internalProxyHostAccessList = {
         await buildHostFile(proxyHost, hostAccessLists);
 
         for (const location of proxyHost.locations || []) {
+            // global will use the host file name anyway
             if (location.npmplus_access_list_type === "custom") {
                 // order as specified in the UI
                 const locationAccessLists = internalProxyHostAccessList.orderAccessListsByIds(
@@ -280,8 +281,6 @@ const internalProxyHostAccessList = {
                     location.npmplus_access_list_ids
                 );
                 await buildLocationFile(proxyHost, location, locationAccessLists);
-            } else if (location.npmplus_access_list_type === "global") {
-                await buildLocationFile(proxyHost, location, hostAccessLists || []);
             }
         }
     },
@@ -371,14 +370,26 @@ const internalProxyHostAccessList = {
             return;
         }
 
-        if (proxyHost.npmplus_access_list_type === "custom" && (!Array.isArray(proxyHost.npmplus_access_list_ids) || proxyHost.npmplus_access_list_ids.length === 0)) {
-            throw new errs.ValidationError("Custom Access Lists require at least 1 access list to be specified");
+        if (proxyHost.npmplus_access_list_type === "custom") {
+            if (!Array.isArray(proxyHost.npmplus_access_list_ids) || proxyHost.npmplus_access_list_ids.length === 0) {
+                throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+            }
+            // This should never happen unless a different frontend is used. Proper deduplication happens later
+            if (new Set(proxyHost.npmplus_access_list_ids).size !== proxyHost.npmplus_access_list_ids.length) {
+                throw new errs.ValidationError(`Duplicate Access Lists Found`);
+            }
         }
+
         if (Array.isArray(proxyHost.locations)) {
             for (const location of proxyHost.locations) {
-                if (location.npmplus_access_list_type === "custom" &&
-                    (!Array.isArray(location.npmplus_access_list_ids) || location.npmplus_access_list_ids.length === 0)) {
-                    throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+                if (location.npmplus_access_list_type === "custom") {
+                    if (!Array.isArray(location.npmplus_access_list_ids) || location.npmplus_access_list_ids.length === 0) {
+                        throw new errs.ValidationError(`Custom Access Lists require at least 1 access list to be specified`);
+                    }
+                    // This should never happen unless a different frontend is used. Proper deduplication happens later
+                    if (new Set(location.npmplus_access_list_ids).size !== location.npmplus_access_list_ids.length) {
+                        throw new errs.ValidationError(`Duplicate Access Lists Found`);
+                    }
                 }
             }
         }
