@@ -291,7 +291,7 @@ const internalProxyHostAccessList = {
      * @param {*} proxyHost 
      * @returns 
      */
-     maskAccessListItems: (proxyHost) => {
+    maskAccessListItems: (proxyHost) => {
         if (!proxyHost) {
             return proxyHost;
         }
