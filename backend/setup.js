@@ -157,12 +157,14 @@ const regenerateAllHosts = async () => {
 			.withGraphFetched(proxyModel.defaultAllowGraph);
 
 		if (proxyHosts?.length) {
+			// locations dont contain access list objects, so prepopulate them before generating the nginx files
 			const updatedProxyHosts = await Promise.all(
 				proxyHosts.map((host) => {
 					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
 					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
 				})
 			);
+
 			await internalNginx.bulkGenerateConfigs(proxyModel, "proxy_host", updatedProxyHosts);
 		}
 
