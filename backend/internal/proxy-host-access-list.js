@@ -169,7 +169,6 @@ const internalProxyHostAccessList = {
         }));
     },
 
-
     /**
      * Updates the npmplus_proxy_host_access_list database table to match the data stored in the object
      * @param {*} trx 
