@@ -31,7 +31,7 @@ const up = async (knex) => {
 		for (const row of rows) {
 			let npmplus_access_list_ids = [];
 			let npmplus_access_list_type = "public";
-			let acl_hosts = {};
+			const acl_hosts = {};
 
 			// 0 was used for public but now its no longer used for that
 			// so ignore 0
@@ -46,29 +46,29 @@ const up = async (knex) => {
 
 			let locations;
 			try {
-				locations = Array.isArray(row.locations)
-					? row.locations
-					: JSON.parse(row.locations || "[]");
+				locations = Array.isArray(row.locations) ? row.locations : JSON.parse(row.locations || "[]");
 			} catch {
 				locations = [];
 			}
 
 			const updateData = {
 				npmplus_access_list_ids: JSON.stringify(npmplus_access_list_ids),
-				npmplus_access_list_type: npmplus_access_list_type
+				npmplus_access_list_type: npmplus_access_list_type,
 			};
 
 			if (Array.isArray(locations) && locations.length > 0) {
 				const migratedLocations = locations.map((loc) => ({
 					...loc,
-					npmplus_access_list_ids: Array.isArray(loc.npmplus_access_list_ids) ? loc.npmplus_access_list_ids : [],
+					npmplus_access_list_ids: Array.isArray(loc.npmplus_access_list_ids)
+						? loc.npmplus_access_list_ids
+						: [],
 					npmplus_access_list_type: loc.npmplus_access_list_type ?? "global",
 				}));
 				let count = 0;
-				migratedLocations.forEach(location => {
+				migratedLocations.forEach((location) => {
 					location.id = count++;
 					if (Array.isArray(location.npmplus_access_list_ids)) {
-						location.npmplus_access_list_ids.forEach(aclId => {
+						location.npmplus_access_list_ids.forEach((aclId) => {
 							acl_hosts[`${row.id}_${aclId}`] = {
 								proxy_host_id: row.id,
 								access_list_id: aclId,
@@ -79,13 +79,10 @@ const up = async (knex) => {
 				updateData.locations = JSON.stringify(migratedLocations);
 			}
 
-			await trx("proxy_host")
-				.where({ id: row.id })
-				.update(updateData);
+			await trx("proxy_host").where({ id: row.id }).update(updateData);
 			const acl_host_rows = Object.values(acl_hosts);
 			if (acl_host_rows.length > 0) {
-				await trx("npmplus_proxy_host_access_list")
-					.insert(acl_host_rows);
+				await trx("npmplus_proxy_host_access_list").insert(acl_host_rows);
 			}
 		}
 

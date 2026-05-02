@@ -74,14 +74,13 @@ const internalAccessList = {
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
-
 			// locations don't have accessList objects, only IDs, so populate it with the object itself
-			freshRow.proxy_hosts = await Promise
-				.all((freshRow.proxy_hosts || [])
-					.map((host) => {
-						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
-						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
-					}));
+			freshRow.proxy_hosts = await Promise.all(
+				(freshRow.proxy_hosts || []).map((host) => {
+					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+				}),
+			);
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 
@@ -194,12 +193,12 @@ const internalAccessList = {
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
 			// locations don't have accessList objects, only IDs, so populate it with the object itself
-			freshRow.proxy_hosts = await Promise
-				.all((freshRow.proxy_hosts || [])
-					.map((host) => {
-						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
-						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
-					}));
+			freshRow.proxy_hosts = await Promise.all(
+				(freshRow.proxy_hosts || []).map((host) => {
+					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+				}),
+			);
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 		await internalNginx.reload();
@@ -222,9 +221,17 @@ const internalAccessList = {
 		const query = accessListModel
 			.query()
 			.select("access_list.*", accessListModel.raw("COUNT(DISTINCT proxy_host.id) as proxy_host_count"))
-			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
+			.leftJoin(
+				"npmplus_proxy_host_access_list",
+				"npmplus_proxy_host_access_list.access_list_id",
+				"access_list.id",
+			)
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn(
+					"proxy_host.is_deleted",
+					"=",
+					0,
+				);
 			})
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
@@ -302,8 +309,8 @@ const internalAccessList = {
 				updatedHost.npmplus_access_list_type = "public";
 			}
 			// locations can be null specified by the schema
-			if(updatedHost.locations == null){
-				updatedHost.locations = []
+			if (updatedHost.locations == null) {
+				updatedHost.locations = [];
 			}
 			if (!Array.isArray(updatedHost.locations)) {
 				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
@@ -313,8 +320,13 @@ const internalAccessList = {
 				if (!Array.isArray(updatedLocation.npmplus_access_list_ids)) {
 					updatedLocation.npmplus_access_list_ids = [];
 				}
-				updatedLocation.npmplus_access_list_ids = updatedLocation.npmplus_access_list_ids.filter((id) => id !== row.id);
-				if (updatedLocation.npmplus_access_list_ids.length === 0 && updatedLocation.npmplus_access_list_type === "custom") {
+				updatedLocation.npmplus_access_list_ids = updatedLocation.npmplus_access_list_ids.filter(
+					(id) => id !== row.id,
+				);
+				if (
+					updatedLocation.npmplus_access_list_ids.length === 0 &&
+					updatedLocation.npmplus_access_list_type === "custom"
+				) {
 					updatedLocation.npmplus_access_list_type = "global";
 				}
 				return updatedLocation;
@@ -323,11 +335,11 @@ const internalAccessList = {
 		});
 		// 3. Write the changes to the database and the config
 		if (affectedHosts.length > 0) {
-
 			await proxyHostModel.transaction(async (trx) => {
 				await Promise.all(
 					affectedHosts.map((host) => {
-						return proxyHostModel.query(trx)
+						return proxyHostModel
+							.query(trx)
 							.patchAndFetchById(host.id, {
 								npmplus_access_list_ids: host.npmplus_access_list_ids,
 								npmplus_access_list_type: host.npmplus_access_list_type,
@@ -336,18 +348,18 @@ const internalAccessList = {
 							.then(() => {
 								return internalProxyHostAccessList.syncAccessListRelations(trx, host.id, host);
 							});
-					})
+					}),
 				);
 			});
 			row.proxy_hosts = affectedHosts;
 			// step 4. Regenerate configs and htpasswd files
 			// locations don't have accessList objects, only IDs, so populate it with the object itself
-			row.proxy_hosts = await Promise
-				.all((row.proxy_hosts || [])
-					.map((host) => {
-						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
-						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
-					}));
+			row.proxy_hosts = await Promise.all(
+				(row.proxy_hosts || []).map((host) => {
+					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+				}),
+			);
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
 		}
 
@@ -384,9 +396,17 @@ const internalAccessList = {
 		const query = accessListModel
 			.query()
 			.select("access_list.*", accessListModel.raw("COUNT(DISTINCT proxy_host.id) as proxy_host_count"))
-			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
+			.leftJoin(
+				"npmplus_proxy_host_access_list",
+				"npmplus_proxy_host_access_list.access_list_id",
+				"access_list.id",
+			)
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn(
+					"proxy_host.is_deleted",
+					"=",
+					0,
+				);
 			})
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")

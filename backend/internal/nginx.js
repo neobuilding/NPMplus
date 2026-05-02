@@ -265,7 +265,10 @@ const internalNginx = {
 			// must be ordered by ID as the AccessList constructed is unordered, but for generation it must be.
 			// the IDs are retrieved in the correct order (specified in the UI) from the DB so they are used for the ordering
 			const hostAccessLists = Array.isArray(host.access_lists) ? host.access_lists : [];
-			host.access_lists = internalProxyHostAccessList.orderAccessListsByIds(hostAccessLists, host.npmplus_access_list_ids);
+			host.access_lists = internalProxyHostAccessList.orderAccessListsByIds(
+				hostAccessLists,
+				host.npmplus_access_list_ids,
+			);
 			host.access_list = internalProxyHostAccessList.buildAclFile(host.access_lists);
 		}
 		const hostHtpasswdFileName = internalProxyHostAccessList.getHostFileName(host);
@@ -277,7 +280,6 @@ const internalNginx = {
 
 		if (host.locations) {
 			_.map(host.locations, (location) => {
-
 				if (location.npmplus_access_list_type === "global") {
 					location.access_list = host.access_list;
 				} else if (location.npmplus_access_list_type === "custom") {
@@ -287,7 +289,10 @@ const internalNginx = {
 
 					// must be ordered by ID as the AccessList constructed is unordered, but for generation it must be.
 					// the IDs are retrieved in the correct order (specified in the UI) from the DB so they are used for the ordering
-					location.access_lists = internalProxyHostAccessList.orderAccessListsByIds(location.access_lists || [], location.npmplus_access_list_ids);
+					location.access_lists = internalProxyHostAccessList.orderAccessListsByIds(
+						location.access_lists || [],
+						location.npmplus_access_list_ids,
+					);
 					location.access_list = internalProxyHostAccessList.buildAclFile(location.access_lists);
 				}
 

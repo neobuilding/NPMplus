@@ -51,7 +51,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
 		npmplusAccessListType: "global",
-		id: null
+		id: null,
 	};
 
 	const toggleAdvVisible = (idx: number) => {
@@ -88,9 +88,14 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		setFormField(newValues);
 	};
 
-	const handleAccessFieldsChange = (idx: number, changes: { npmplusAccessListIds?: number[]; npmplusAccessListType?: ProxyLocation["npmplusAccessListType"] }) => {
+	const handleAccessFieldsChange = (
+		idx: number,
+		changes: { npmplusAccessListIds?: number[]; npmplusAccessListType?: ProxyLocation["npmplusAccessListType"] },
+	) => {
 		const newValues = values.map((val: UiLocation, i: number) => {
-			if (i !== idx) { return val; }
+			if (i !== idx) {
+				return val;
+			}
 			return { ...val, ...changes };
 		});
 		setValues(newValues);

@@ -1,6 +1,6 @@
 import { IconArrowDown, IconWorld, IconLock, IconLockOpen2, IconArrowUp, IconX } from "@tabler/icons-react";
 import { useFormikContext } from "formik";
-import { useState, ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Select, { components, type OptionProps } from "react-select";
 import type { AccessList, ProxyLocation } from "src/api/backend";
 import { useLocaleState } from "src/context";
@@ -36,18 +36,15 @@ interface AccessTypeOption extends BaseOption {
 const OptionContent = (label: string, subLabel: string, icon?: ReactNode) => (
 	<div className="flex-fill">
 		<div className="font-weight-medium">
-			{icon}<strong className="ms-1">{label}</strong>
+			{icon}
+			<strong className="ms-1">{label}</strong>
 		</div>
 		<div className="text-secondary mt-1 ps-3">{subLabel}</div>
 	</div>
 );
 
 const Option = (props: OptionProps<AccessOption>) => {
-	return (
-		<components.Option {...props}>
-			{OptionContent(props.data.label, props.data.subLabel)}
-		</components.Option>
-	);
+	return <components.Option {...props}>{OptionContent(props.data.label, props.data.subLabel)}</components.Option>;
 };
 
 const TypeOption = (props: OptionProps<AccessTypeOption>) => {
@@ -59,7 +56,6 @@ const TypeOption = (props: OptionProps<AccessTypeOption>) => {
 };
 
 export function AccessFields({ initialAccessListType, location, initialAccessListIds, name, type, onChange }: Props) {
-
 	const [values, setValues] = useState(initialAccessListIds || []);
 	const [aclValue, setAclValue] = useState(initialAccessListType);
 	const { locale } = useLocaleState();
@@ -75,12 +71,12 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				{
 					users: item?.items?.length,
 					rules: item?.clients?.length,
-					date: item?.createdOn ? formatDateTime(item?.createdOn, locale) : "N/A"
-				}
+					date: item?.createdOn ? formatDateTime(item?.createdOn, locale) : "N/A",
+				},
 			),
-			meta: item
+			meta: item,
 		};
-	}
+	};
 
 	const createOption = (type: ProxyLocation["npmplusAccessListType"]): AccessTypeOption => {
 		if (type === "global") {
@@ -88,7 +84,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				icon: <IconWorld size={14} className="text-cyan" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.global" }),
-				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" })
+				subLabel: intl.formatMessage({ id: "access-list.global.subtitle" }),
 			};
 		}
 		if (type === "custom") {
@@ -96,21 +92,19 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 				icon: <IconLock size={14} className="text-lime" />,
 				type: type,
 				label: intl.formatMessage({ id: "access-list.custom" }),
-				subLabel: intl.formatMessage({ id: "access-list.custom.subtitle" })
+				subLabel: intl.formatMessage({ id: "access-list.custom.subtitle" }),
 			};
 		}
 		return {
 			icon: <IconLockOpen2 size={14} className="text-red" />,
 			type: type,
 			label: intl.formatMessage({ id: "access-list.public" }),
-			subLabel: intl.formatMessage({ id: "access-list.public.subtitle" })
+			subLabel: intl.formatMessage({ id: "access-list.public.subtitle" }),
 		};
+	};
 
-	}
-
-	const defaultOptions: AccessOption[] =
-		data?.map(createDefaultItem) || [];
-	const valuesSet = new Set(values?.map((item: number) => (item || 0)) || []);
+	const defaultOptions: AccessOption[] = data?.map(createDefaultItem) || [];
+	const valuesSet = new Set(values?.map((item: number) => item || 0) || []);
 	const options = defaultOptions.filter((option: AccessOption) => !valuesSet.has(option.value));
 
 	const typeOptions = (): AccessTypeOption[] => {
@@ -123,11 +117,11 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			ret.push(createOption("custom"));
 		}
 		return ret;
-	}
+	};
 
 	const findFirstAvailableOption = (): AccessOption | null => {
 		return options.length > 0 ? options[0] : null;
-	}
+	};
 
 	const applyUpdatedValues = (newValues: number[]) => {
 		setValues(newValues);
@@ -138,7 +132,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 	const onAccessListChange = (acl: AccessList, idx: number) => {
 		const newValues = values.map((id: number, i: number) => (i === idx ? acl.id || 0 : id));
 		applyUpdatedValues(newValues);
-	}
+	};
 
 	const handleAdd = () => {
 		const newAccessOption = findFirstAvailableOption();
@@ -146,38 +140,37 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 			const newValues = [...values, newAccessOption.meta.id];
 			applyUpdatedValues(newValues);
 		}
-	}
+	};
 
 	const handleMoveUp = (idx: number) => {
 		if (idx > 0) {
 			const newIdx = idx - 1;
-			let newValues = [...values];
+			const newValues = [...values];
 			const aclId = newValues[idx];
 			newValues[idx] = newValues[newIdx];
 			newValues[newIdx] = aclId;
 			applyUpdatedValues(newValues);
 		}
-	}
+	};
 
 	const handleMoveDown = (idx: number) => {
-		if (idx < (values.length - 1)) {
+		if (idx < values.length - 1) {
 			const newIdx = idx + 1;
-			let newValues = [...values];
+			const newValues = [...values];
 			const aclId = newValues[idx];
 			newValues[idx] = newValues[newIdx];
 			newValues[newIdx] = aclId;
 			applyUpdatedValues(newValues);
 		}
-	}
+	};
 
 	const handleRemove = (aclId: number) => {
 		const newValues = values.filter((id: number) => id !== aclId);
 		applyUpdatedValues(newValues);
-	}
+	};
 
 	return (
 		<div className="mb-3">
-
 			{isLoading ? <div className="placeholder placeholder-lg col-12 my-3 placeholder-glow" /> : null}
 			{isError ? <div className="invalid-feedback">{`${error}`}</div> : null}
 			<div className="row">
@@ -207,7 +200,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 					</div>
 				</div>
 			</div>
-			{!isLoading && !isError && aclValue === "custom" ?
+			{!isLoading && !isError && aclValue === "custom" ? (
 				<>
 					{values.map((item: number, idx: number) => (
 						<div key={item ?? idx} className="input-group mb-1 shadow-none">
@@ -229,10 +222,10 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								}}
 								isDisabled={aclValue !== "custom"}
 							/>
-							{idx > 0 ?
+							{idx > 0 ? (
 								<button
 									type="button"
- 									aria-label="Move up"
+									aria-label="Move up"
 									className="btn mb-1 ms-1"
 									onClick={() => {
 										handleMoveUp(idx);
@@ -240,9 +233,8 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								>
 									<IconArrowUp size={16} />
 								</button>
-								: null
-							}
-							{idx < values.length - 1 ?
+							) : null}
+							{idx < values.length - 1 ? (
 								<button
 									type="button"
 									aria-label="Move down"
@@ -253,8 +245,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								>
 									<IconArrowDown size={16} />
 								</button>
-								: null
-							}
+							) : null}
 							<button
 								type="button"
 								aria-label="Remove"
@@ -275,7 +266,7 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 						</div>
 					)}
 				</>
-				: null}
+			) : null}
 		</div>
 	);
 }

@@ -11,9 +11,14 @@ interface Props {
 	proxyHostId: number;
 }
 export function AccessListFormatter({ proxyHostId, access = [], type = "public", locations = [] }: Props) {
-	const hasLocationAcls = locations.filter((loc) => loc.npmplusAccessListType === "custom" && (loc.npmplusAccessListIds || []).length > 0).length > 0;
+	const hasLocationAcls =
+		locations.filter((loc) => loc.npmplusAccessListType === "custom" && (loc.npmplusAccessListIds || []).length > 0)
+			.length > 0;
 
-	let triggerLabel = type === "custom" ? intl.formatMessage({ id: "access-list.custom" }) : intl.formatMessage({ id: "access-list.public" });
+	let triggerLabel =
+		type === "custom"
+			? intl.formatMessage({ id: "access-list.custom" })
+			: intl.formatMessage({ id: "access-list.public" });
 
 	if (access.length === 1) {
 		triggerLabel = access[0].name;
@@ -49,5 +54,7 @@ export function AccessListFormatter({ proxyHostId, access = [], type = "public",
 		<OverlayTrigger trigger={["hover", "focus"]} placement="bottom" overlay={popover}>
 			{button}
 		</OverlayTrigger>
-	) : (button);
+	) : (
+		button
+	);
 }

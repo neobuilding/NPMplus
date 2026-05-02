@@ -78,20 +78,32 @@ export default function Table({
 					return <CertificateFormatter certificate={info.row.original.certificate} />;
 				},
 			}),
-			columnHelper.accessor((row: any) => {
-				const accessLists = row.accessLists || [];
-				const triggerLabel = intl.formatMessage({ id: row.npmplusAccessListType === "custom" ? "access-list.custom" : "access-list.public" })
-				if (accessLists.length === 1) {
-					return accessLists[0].name;
-				}
-				return triggerLabel;
-			}, {
-				id: "accessList",
-				header: intl.formatMessage({ id: "column.access" }),
-				cell: (info: any) => {
-					return <AccessListFormatter proxyHostId={info.row.original.id} locations={info.row.original.locations} access={info.row.original.accessLists} type={info.row.original.npmplusAccessListType} />;
+			columnHelper.accessor(
+				(row: any) => {
+					const accessLists = row.accessLists || [];
+					const triggerLabel = intl.formatMessage({
+						id: row.npmplusAccessListType === "custom" ? "access-list.custom" : "access-list.public",
+					});
+					if (accessLists.length === 1) {
+						return accessLists[0].name;
+					}
+					return triggerLabel;
 				},
-			}),
+				{
+					id: "accessList",
+					header: intl.formatMessage({ id: "column.access" }),
+					cell: (info: any) => {
+						return (
+							<AccessListFormatter
+								proxyHostId={info.row.original.id}
+								locations={info.row.original.locations}
+								access={info.row.original.accessLists}
+								type={info.row.original.npmplusAccessListType}
+							/>
+						);
+					},
+				},
+			),
 			columnHelper.accessor(
 				(row: any) => {
 					if (!row.enabled) return "disabled";

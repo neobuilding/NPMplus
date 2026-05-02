@@ -64,16 +64,18 @@ const internalProxyHost = {
 				}
 				thisData = internalProxyHostAccessList.cleanAccessListTypes(thisData);
 				await internalProxyHostAccessList.validateAccessLists(thisData);
-				return proxyHostModel.transaction(async (trx) => {
-					const row = await proxyHostModel.query(trx).insertAndFetch(thisData);
+				return proxyHostModel
+					.transaction(async (trx) => {
+						const row = await proxyHostModel.query(trx).insertAndFetch(thisData);
 
-					const relationRows = internalProxyHostAccessList.getAccessListRelationRows(row.id, thisData);
-					if (relationRows.length > 0) {
-						await trx("npmplus_proxy_host_access_list").insert(relationRows);
-					}
+						const relationRows = internalProxyHostAccessList.getAccessListRelationRows(row.id, thisData);
+						if (relationRows.length > 0) {
+							await trx("npmplus_proxy_host_access_list").insert(relationRows);
+						}
 
-					return row;
-				}).then(utils.omitRow(omissions()));
+						return row;
+					})
+					.then(utils.omitRow(omissions()));
 			})
 			.then((row) => {
 				if (createCertificate) {
@@ -211,19 +213,21 @@ const internalProxyHost = {
 							.where({ id: thisData.id })
 							.patch(thisData)
 							.then((patchResult) => {
-								return internalProxyHostAccessList.syncAccessListRelations(trx, thisData.id, thisData)
-									.then(() => { return patchResult });
+								return internalProxyHostAccessList
+									.syncAccessListRelations(trx, thisData.id, thisData)
+									.then(() => {
+										return patchResult;
+									});
 							});
 					})
 					.then(() => {
 						// Add to audit log
-						return internalAuditLog
-							.add(access, {
-								action: "updated",
-								object_type: "proxy-host",
-								object_id: row.id,
-								meta: thisData,
-							});
+						return internalAuditLog.add(access, {
+							action: "updated",
+							object_type: "proxy-host",
+							object_id: row.id,
+							meta: thisData,
+						});
 					});
 			})
 			.then(() => {
@@ -318,16 +322,14 @@ const internalProxyHost = {
 
 				return proxyHostModel
 					.transaction((trx) => {
-						return proxyHostModel
-							.query(trx)
-							.where("id", row.id)
-							.patch({
-								is_deleted: 1,
-							});
+						return proxyHostModel.query(trx).where("id", row.id).patch({
+							is_deleted: 1,
+						});
 					})
 					.then(() => {
 						// Delete Nginx Config
-						return internalNginx.deleteConfig("proxy_host", row)
+						return internalNginx
+							.deleteConfig("proxy_host", row)
 							.then(() => {
 								return internalProxyHostAccessList.delete(row);
 							})
@@ -492,7 +494,7 @@ const internalProxyHost = {
 		const aclRows = await Promise.all(
 			rows.map((row) => {
 				return internalProxyHostAccessList.cleanAccessListTypes(row);
-			})
+			}),
 		);
 
 		if (typeof expand !== "undefined" && expand !== null && expand.indexOf("certificate") !== -1) {

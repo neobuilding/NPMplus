@@ -55,7 +55,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 			return newLoc;
 		});
 
-
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,

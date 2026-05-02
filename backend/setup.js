@@ -162,7 +162,7 @@ const regenerateAllHosts = async () => {
 				proxyHosts.map((host) => {
 					const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
 					return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
-				})
+				}),
 			);
 
 			await internalNginx.bulkGenerateConfigs(proxyModel, "proxy_host", updatedProxyHosts);
