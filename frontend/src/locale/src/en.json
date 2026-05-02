@@ -80,6 +80,18 @@
 	"access-list.public.subtitle": {
 		"defaultMessage": "No basic auth required"
 	},
+	"access-list.global": {
+		"defaultMessage": "Global"
+	},
+	"access-list.global.subtitle": {
+		"defaultMessage": "Use the same as the Global Access List"
+	},
+	"access-list.custom": {
+		"defaultMessage": "Custom"
+	},
+	"access-list.custom.subtitle": {
+		"defaultMessage": "Use a custom access list type"
+	},
 	"access-list.rule-source.placeholder": {
 		"defaultMessage": "192.168.1.100 or 192.168.1.0/24 or 2001:0db8::/32"
 	},
@@ -644,11 +656,17 @@
 	"proxy-host": {
 		"defaultMessage": "Proxy Host"
 	},
+	"proxy-host.access-lists": {
+		"defaultMessage": "Access Lists"
+	},
 	"proxy-host.forward-host": {
 		"defaultMessage": "Forward Hostname / IP"
 	},
 	"proxy-host.forward-host-path": {
 		"defaultMessage": "Forward Hostname / IP / Path"
+	},
+	"proxy-host.global-access-lists": {
+		"defaultMessage": "Global Access Lists"
 	},
 	"proxy-hosts": {
 		"defaultMessage": "Proxy Hosts"

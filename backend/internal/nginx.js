@@ -5,6 +5,7 @@ import _ from "lodash";
 import errs from "../lib/error.js";
 import utils from "../lib/utils.js";
 import { debug, nginx as logger } from "../logger.js";
+import internalProxyHostAccessList from "./proxy-host-access-list.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,6 +28,7 @@ const internalNginx = {
 	configure: async (model, host_type, host) => {
 		let combined_meta = {};
 
+		await internalProxyHostAccessList.build(host_type, host);
 		await internalNginx.deleteConfig(host_type, host);
 		await internalNginx.generateConfig(host_type, host);
 
@@ -255,11 +257,44 @@ const internalNginx = {
 		if (host.domain_names) {
 			host.server_names = host.domain_names.map((domain_name) => domainToASCII(domain_name) || domain_name);
 		}
+		if (host.npmplus_access_list_type === "custom") {
+			// note that there is access_lists -> an array in the correct order
+			// and access_list -> an object used in the config generation
+			// note the (s) in the former and lack thereof in the latter
+
+			// must be ordered by ID as the AccessList constructed is unordered, but for generation it must be.
+			// the IDs are retrieved in the correct order (specified in the UI) from the DB so they are used for the ordering
+			const hostAccessLists = Array.isArray(host.access_lists) ? host.access_lists : [];
+			host.access_lists = internalProxyHostAccessList.orderAccessListsByIds(hostAccessLists, host.npmplus_access_list_ids);
+			host.access_list = internalProxyHostAccessList.buildAclFile(host.access_lists);
+		}
+		const hostHtpasswdFileName = internalProxyHostAccessList.getHostFileName(host);
+		if (hostHtpasswdFileName.length > 0) {
+			host.filename = hostHtpasswdFileName;
+		}
 
 		host.upstreams = await internalNginx.renderUpstreams(host);
 
 		if (host.locations) {
 			_.map(host.locations, (location) => {
+
+				if (location.npmplus_access_list_type === "global") {
+					location.access_list = host.access_list;
+				} else if (location.npmplus_access_list_type === "custom") {
+					// note that there is access_lists -> an array in the correct order
+					// and access_list -> an object used in the config generation
+					// note the (s) in the former and lack thereof in the latter
+
+					// must be ordered by ID as the AccessList constructed is unordered, but for generation it must be.
+					// the IDs are retrieved in the correct order (specified in the UI) from the DB so they are used for the ordering
+					location.access_lists = internalProxyHostAccessList.orderAccessListsByIds(location.access_lists || [], location.npmplus_access_list_ids);
+					location.access_list = internalProxyHostAccessList.buildAclFile(location.access_lists);
+				}
+
+				const htpasswdFileName = internalProxyHostAccessList.getLocationFileName(host, location);
+				if (htpasswdFileName.length > 0) {
+					location.filename = htpasswdFileName;
+				}
 				if (location.npmplus_auth_request === "anubis") {
 					host.create_anubis_locations = true;
 				}

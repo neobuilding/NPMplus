@@ -10,6 +10,7 @@ import accessListClientModel from "../models/access_list_client.js";
 import proxyHostModel from "../models/proxy_host.js";
 import internalAuditLog from "./audit-log.js";
 import internalNginx from "./nginx.js";
+import internalProxyHostAccessList from "./proxy-host-access-list.js";
 
 const omissions = () => {
 	return ["is_deleted"];
@@ -64,7 +65,7 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.access_list.[clients,items]"],
+				expand: ["owner", "items", "clients", "proxy_hosts.[access_lists.[clients,items]]"],
 			},
 			true, // skip masking
 		);
@@ -72,8 +73,15 @@ const internalAccessList = {
 		// Audit log
 		data.meta = _.assign({}, data.meta || {}, freshRow.meta);
 		await internalAccessList.build(freshRow);
-
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
+
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
+			freshRow.proxy_hosts = await Promise
+				.all((freshRow.proxy_hosts || [])
+					.map((host) => {
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 
@@ -178,13 +186,20 @@ const internalAccessList = {
 			access,
 			{
 				id: data.id,
-				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_list.[clients,items]]"],
+				expand: ["owner", "items", "clients", "proxy_hosts.[certificate,access_lists.[clients,items]]"],
 			},
 			true, // skip masking
 		);
 
 		await internalAccessList.build(freshRow);
 		if (Number.parseInt(freshRow.proxy_host_count, 10)) {
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
+			freshRow.proxy_hosts = await Promise
+				.all((freshRow.proxy_hosts || [])
+					.map((host) => {
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 		await internalNginx.reload();
@@ -206,14 +221,15 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.select("access_list.*", accessListModel.raw("COUNT(DISTINCT proxy_host.id) as proxy_host_count"))
+			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.andWhere("access_list.id", thisData.id)
 			.groupBy("access_list.id")
-			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_list.[clients,items]]]")
+			.allowGraph("[owner,items,clients,proxy_hosts.[certificate,access_lists.[clients,items]]]")
 			.first();
 
 		if (accessData.permission_visibility !== "all") {
@@ -236,6 +252,7 @@ const internalAccessList = {
 		if (typeof data.omit !== "undefined" && data.omit !== null) {
 			row = _.omit(row, data.omit);
 		}
+
 		return row;
 	},
 
@@ -250,13 +267,12 @@ const internalAccessList = {
 		await access.can("access_lists:delete", data.id);
 		const row = await internalAccessList.get(access, {
 			id: data.id,
-			expand: ["proxy_hosts", "items", "clients"],
+			expand: ["proxy_hosts.[certificate, access_lists.[clients,items]]", "items", "clients"],
 		});
 
 		if (!row?.id) {
 			throw new errs.ItemNotFoundError(data.id);
 		}
-
 		// 1. update row to be deleted
 		// 2. update any proxy hosts that were using it (ignoring permissions)
 		// 3. reconfigure those hosts
@@ -268,16 +284,70 @@ const internalAccessList = {
 		});
 
 		// 2. update any proxy hosts that were using it (ignoring permissions)
-		if (row.proxy_hosts) {
-			await proxyHostModel.query().where("access_list_id", "=", row.id).patch({ access_list_id: 0 });
+		const affectedHosts = (row.proxy_hosts || []).map((host) => {
+			const updatedHost = { ...host };
+			// check in case something crazy happened. This should never be the case, but safeguard
+			if (!Array.isArray(updatedHost.npmplus_access_list_ids)) {
+				updatedHost.npmplus_access_list_ids = [];
+			}
+			updatedHost.npmplus_access_list_ids = updatedHost.npmplus_access_list_ids.filter((id) => id !== row.id);
 
-			// 3. reconfigure those hosts, then reload nginx
-			// set the access_list_id to zero for these items
-			row.proxy_hosts.map((_val, idx) => {
-				row.proxy_hosts[idx].access_list_id = 0;
-				return true;
+			// update the access_lists object (separate from the access_lists_ids)
+			if (!Array.isArray(updatedHost.access_lists)) {
+				updatedHost.access_lists = [];
+			}
+			updatedHost.access_lists = updatedHost.access_lists.filter((acl) => acl.id !== row.id);
+
+			if (updatedHost.npmplus_access_list_ids.length === 0) {
+				updatedHost.npmplus_access_list_type = "public";
+			}
+			// locations can be null specified by the schema
+			if(updatedHost.locations == null){
+				updatedHost.locations = []
+			}
+			if (!Array.isArray(updatedHost.locations)) {
+				throw new errs.ConfigurationError("Invalid location structure. Expected an array");
+			}
+			updatedHost.locations = updatedHost.locations.map((location) => {
+				const updatedLocation = { ...location };
+				if (!Array.isArray(updatedLocation.npmplus_access_list_ids)) {
+					updatedLocation.npmplus_access_list_ids = [];
+				}
+				updatedLocation.npmplus_access_list_ids = updatedLocation.npmplus_access_list_ids.filter((id) => id !== row.id);
+				if (updatedLocation.npmplus_access_list_ids.length === 0 && updatedLocation.npmplus_access_list_type === "custom") {
+					updatedLocation.npmplus_access_list_type = "global";
+				}
+				return updatedLocation;
 			});
+			return updatedHost;
+		});
+		// 3. Write the changes to the database and the config
+		if (affectedHosts.length > 0) {
 
+			await proxyHostModel.transaction(async (trx) => {
+				await Promise.all(
+					affectedHosts.map((host) => {
+						return proxyHostModel.query(trx)
+							.patchAndFetchById(host.id, {
+								npmplus_access_list_ids: host.npmplus_access_list_ids,
+								npmplus_access_list_type: host.npmplus_access_list_type,
+								locations: host.locations,
+							})
+							.then(() => {
+								return internalProxyHostAccessList.syncAccessListRelations(trx, host.id, host);
+							});
+					})
+				);
+			});
+			row.proxy_hosts = affectedHosts;
+			// step 4. Regenerate configs and htpasswd files
+			// locations don't have accessList objects, only IDs, so populate it with the object itself
+			row.proxy_hosts = await Promise
+				.all((row.proxy_hosts || [])
+					.map((host) => {
+						const cleanedHost = internalProxyHostAccessList.cleanAccessListTypes(host);
+						return internalProxyHostAccessList.populateLocationAccessLists(cleanedHost);
+					}));
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", row.proxy_hosts);
 		}
 
@@ -313,9 +383,10 @@ const internalAccessList = {
 
 		const query = accessListModel
 			.query()
-			.select("access_list.*", accessListModel.raw("COUNT(proxy_host.id) as proxy_host_count"))
+			.select("access_list.*", accessListModel.raw("COUNT(DISTINCT proxy_host.id) as proxy_host_count"))
+			.leftJoin("npmplus_proxy_host_access_list", "npmplus_proxy_host_access_list.access_list_id", "access_list.id")
 			.leftJoin("proxy_host", function () {
-				this.on("proxy_host.access_list_id", "=", "access_list.id").andOn("proxy_host.is_deleted", "=", 0);
+				this.on("proxy_host.id", "=", "npmplus_proxy_host_access_list.proxy_host_id").andOn("proxy_host.is_deleted", "=", 0);
 			})
 			.where("access_list.is_deleted", 0)
 			.groupBy("access_list.id")
@@ -339,11 +410,10 @@ const internalAccessList = {
 
 		const rows = await query.then(utils.omitRows(omissions()));
 		if (rows) {
-			rows.map((row, idx) => {
+			rows.forEach((row, idx) => {
 				if (typeof row.items !== "undefined" && row.items) {
 					rows[idx] = internalAccessList.maskItems(row);
 				}
-				return true;
 			});
 		}
 		return rows;
@@ -400,23 +470,15 @@ const internalAccessList = {
 	},
 
 	/**
-	 * @param   {Object}  list
-	 * @param   {Integer} list.id
-	 * @param   {String}  list.name
-	 * @param   {Array}   list.items
-	 * @returns {Promise}
+	 *
+	 * @param {*} htpasswdFile
+	 * @param {*} items
 	 */
-	build: async (list) => {
-		logger.info(`Building Access file #${list.id} for: ${list.name}`);
-
-		const htpasswdFile = internalAccessList.getFilename(list);
-
-		await rm(htpasswdFile, { force: true });
-
+	writeData: async (htpasswdFile, items) => {
 		await writeFile(htpasswdFile, "", { encoding: "utf8" });
 
-		if (list.items?.length) {
-			for (const item of list.items) {
+		if (items?.length) {
+			for (const item of items) {
 				if (item.username?.length && item.password?.length) {
 					logger.info(`Adding: ${item.username}`);
 
@@ -431,6 +493,22 @@ const internalAccessList = {
 				}
 			}
 		}
+	},
+
+	/**
+	 * @param   {Object}  list
+	 * @param   {Integer} list.id
+	 * @param   {String}  list.name
+	 * @param   {Array}   list.items
+	 * @returns {Promise}
+	 */
+	build: async (list) => {
+		logger.info(`Building Access file #${list.id} for: ${list.name}`);
+
+		const htpasswdFile = internalAccessList.getFilename(list);
+
+		await rm(htpasswdFile, { force: true });
+		await internalAccessList.writeData(htpasswdFile, list.items);
 
 		logger.success(`Built Access file #${list.id} for: ${list.name}`);
 	},

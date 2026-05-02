@@ -7,7 +7,7 @@ import { type ReactNode, useState } from "react";
 import { Alert } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 import {
-	AccessField,
+	AccessFields,
 	Button,
 	DomainNamesField,
 	HasPermission,
@@ -41,9 +41,26 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 		setIsSubmitting(true);
 		setErrorMsg(null);
 
+		// Set the unrestricted acls here (remove any data in their acl lists)
+		const globalType = values.npmplusAccessListType;
+		let globalAclIds = values.npmplusAccessListIds || [];
+		if (globalType === "public") {
+			globalAclIds = [];
+		}
+		const locations = (values.locations || []).map((loc: any) => {
+			const newLoc = { ...loc };
+			if (loc.npmplusAccessListType === "global" || loc.npmplusAccessListType === "public") {
+				newLoc.npmplusAccessListIds = [];
+			}
+			return newLoc;
+		});
+
+
 		const { ...payload } = {
 			id: id === "new" || isClone ? undefined : id,
 			...values,
+			npmplusAccessListIds: globalAclIds,
+			locations,
 			forwardPort: values.forwardPort || null,
 		};
 
@@ -90,7 +107,8 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							forwardScheme: data?.forwardScheme || "http",
 							forwardHost: data?.forwardHost || "",
 							forwardPort: data?.forwardPort || undefined,
-							accessListId: data?.accessListId || 0,
+							npmplusAccessListIds: data?.npmplusAccessListIds || [],
+							npmplusAccessListType: data?.npmplusAccessListType || "public",
 							cachingEnabled: data?.cachingEnabled || false,
 							blockExploits: data?.blockExploits || false,
 							allowWebsocketUpgrade: data?.allowWebsocketUpgrade || true,
@@ -298,7 +316,17 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														</div>
 													</div>
 												</div>
-												<AccessField />
+												<div className="row">
+													<h4 className="py-2">
+														<T id="proxy-host.global-access-lists" />
+													</h4>
+													<AccessFields
+														initialAccessListType={data?.npmplusAccessListType || "public"}
+														initialAccessListIds={data?.npmplusAccessListIds || []}
+														name="npmplusAccessListIds"
+														type="npmplusAccessListType"
+													/>
+												</div>
 												<div className="my-3">
 													<h4 className="py-2">
 														<T id="options" />

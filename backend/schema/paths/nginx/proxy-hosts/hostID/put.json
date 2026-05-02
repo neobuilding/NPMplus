@@ -100,8 +100,11 @@
 						"npmplus_auth_request": {
 							"$ref": "../../../../components/proxy-host-object.json#/properties/npmplus_auth_request"
 						},
-						"access_list_id": {
-							"$ref": "../../../../components/proxy-host-object.json#/properties/access_list_id"
+						"npmplus_access_list_ids": {
+							"$ref": "../../../../components/proxy-host-object.json#/properties/npmplus_access_list_ids"
+						},
+						"npmplus_access_list_type": {
+							"$ref": "../../../../components/proxy-host-object.json#/properties/npmplus_access_list_type"
 						},
 						"advanced_config": {
 							"$ref": "../../../../components/proxy-host-object.json#/properties/advanced_config"
@@ -140,7 +143,8 @@
 								],
 								"forward_host": "127.0.0.1",
 								"forward_port": 8080,
-								"access_list_id": 0,
+								"npmplus_access_list_ids": [],
+								"npmplus_access_list_type": "public",
 								"certificate_id": 0,
 								"ssl_forced": false,
 								"caching_enabled": false,
@@ -182,7 +186,7 @@
 									]
 								},
 								"certificate": null,
-								"access_list": null
+								"access_lists": []
 							}
 						}
 					},

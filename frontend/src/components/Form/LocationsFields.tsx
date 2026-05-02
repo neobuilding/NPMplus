@@ -2,8 +2,9 @@ import { IconSettings } from "@tabler/icons-react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import cn from "classnames";
 import { useFormikContext } from "formik";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ProxyLocation } from "src/api/backend";
+import { AccessFields } from "src/components";
 import { intl, T } from "src/locale";
 import styles from "./LocationsFields.module.css";
 
@@ -11,8 +12,21 @@ interface Props {
 	initialValues: ProxyLocation[];
 	name?: string;
 }
+
+// this is needed because React may reindex locations incorrectly,
+// so use a controlled index/key to ensure the AccessFields get updated correctly.
+// This is because React may reuse the component and associate an AccessField
+// with a location that was deleted in the local UI
+type UiLocation = ProxyLocation & { uiKey: number };
+
 export function LocationsFields({ initialValues, name = "locations" }: Props) {
-	const [values, setValues] = useState<ProxyLocation[]>(initialValues || []);
+	const nextUiKey = useRef(0);
+	const createUiLocation = (item: ProxyLocation): UiLocation => ({
+		...item,
+		uiKey: nextUiKey.current++,
+	});
+
+	const [values, setValues] = useState<UiLocation[]>((initialValues || []).map(createUiLocation));
 	const { setFieldValue } = useFormikContext();
 	const [advVisible, setAdvVisible] = useState<number[]>([]);
 
@@ -24,6 +38,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		forwardScheme: "http",
 		forwardHost: "",
 		forwardPort: "" as any,
+		npmplusAccessListIds: [],
 		cachingEnabled: false,
 		blockExploits: false,
 		allowWebsocketUpgrade: true,
@@ -35,6 +50,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
+		npmplusAccessListType: "global",
+		id: null
 	};
 
 	const toggleAdvVisible = (idx: number) => {
@@ -42,17 +59,19 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 	};
 
 	const handleAdd = () => {
-		setValues([...values, blankItem]);
+		const newValues = [...values, createUiLocation(blankItem)];
+		setValues(newValues);
+		setFormField(newValues);
 	};
 
 	const handleRemove = (idx: number) => {
-		const newValues = values.filter((_: ProxyLocation, i: number) => i !== idx);
+		const newValues = values.filter((_: UiLocation, i: number) => i !== idx);
 		setValues(newValues);
 		setFormField(newValues);
 	};
 
 	const handleChange = (idx: number, field: string, fieldValue: any) => {
-		const newValues = values.map((v: ProxyLocation, i: number) => {
+		const newValues = values.map((v: UiLocation, i: number) => {
 			if (i !== idx) return v;
 
 			const updatedLocation = { ...v, [field]: fieldValue };
@@ -63,15 +82,23 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 			if (field === "npmplusProxyRequestBuffering" && fieldValue === true) {
 				updatedLocation.npmplusCrowdsecAppsec = true;
 			}
-
 			return updatedLocation;
 		});
 		setValues(newValues);
 		setFormField(newValues);
 	};
 
-	const setFormField = (newValues: ProxyLocation[]) => {
-		const filtered = newValues.filter((v: ProxyLocation) => v?.path?.trim() !== "");
+	const handleAccessFieldsChange = (idx: number, changes: { npmplusAccessListIds?: number[]; npmplusAccessListType?: ProxyLocation["npmplusAccessListType"] }) => {
+		const newValues = values.map((val: UiLocation, i: number) => {
+			if (i !== idx) { return val; }
+			return { ...val, ...changes };
+		});
+		setValues(newValues);
+		setFormField(newValues);
+	};
+
+	const setFormField = (newValues: UiLocation[]) => {
+		const filtered = newValues.filter((v: UiLocation) => v?.path?.trim() !== "").map(({ uiKey, ...rest }) => rest);
 		setFieldValue(name, filtered);
 	};
 
@@ -87,8 +114,8 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 
 	return (
 		<>
-			{values.map((item: ProxyLocation, idx: number) => (
-				<div key={idx} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
+			{values.map((item: UiLocation, idx: number) => (
+				<div key={item.uiKey} className={cn("card", "card-active", "mb-3", styles.locationCard)}>
 					<div className="card-body">
 						<div className="row mb-3">
 							<label className="row" htmlFor="npmplusEnabled">
@@ -202,6 +229,20 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 										onChange={(e) => handleChange(idx, "forwardPort", e.target.value)}
 									/>
 								</div>
+							</div>
+
+							<div className="my-3">
+								<h4 className="py-2">
+									<T id="proxy-host.access-lists" />
+								</h4>
+								<AccessFields
+									initialAccessListType={item?.npmplusAccessListType || "global"}
+									location={item.path}
+									initialAccessListIds={item?.npmplusAccessListIds || []}
+									name={`locations[${idx}].npmplusAccessListIds`}
+									type={`locations[${idx}].npmplusAccessListType`}
+									onChange={(changes) => handleAccessFieldsChange(idx, changes)}
+								/>
 							</div>
 							<div className="my-3">
 								<h4 className="py-2">

@@ -241,6 +241,28 @@
 				}
 			]
 		},
+		"npmplus_access_list_ids": {
+			"type": "array",
+			"items": {
+				"type": "integer",
+				"minimum": 1
+			}
+		},
+		"npmplus_host_access_list_type": {
+			"type": "string",
+			"enum": [
+				"public",
+				"custom"
+			]
+		},
+		"npmplus_location_access_list_type": {
+			"type": "string",
+			"enum": [
+				"global",
+				"public",
+				"custom"
+			]
+		},
 		"certificate_files": {
 			"description": "Certificate Files",
 			"content": {

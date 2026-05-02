@@ -11,7 +11,7 @@ const fetchProxyHost = (id: number | "new") => {
 			domainNames: [],
 			forwardHost: "",
 			forwardPort: 0,
-			accessListId: 0,
+			npmplusAccessListIds: [],
 			certificateId: 0,
 			sslForced: false,
 			cachingEnabled: false,
@@ -35,6 +35,7 @@ const fetchProxyHost = (id: number | "new") => {
 			npmplusFancyindex: false,
 			npmplusXFrameOptions: "SAMEORIGIN",
 			npmplusAuthRequest: "none",
+			npmplusAccessListType: "public"
 		} as ProxyHost);
 	}
 	return getProxyHost(id, ["owner"]);
@@ -71,6 +72,7 @@ const useSetProxyHost = () => {
 			queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
 			queryClient.invalidateQueries({ queryKey: ["host-report"] });
 			queryClient.invalidateQueries({ queryKey: ["certificates"] });
+			queryClient.invalidateQueries({ queryKey: ["access-lists"] });
 		},
 	});
 };
