@@ -230,41 +230,42 @@ export function AccessFields({ initialAccessListType, location, initialAccessLis
 								isDisabled={aclValue !== "custom"}
 							/>
 							{idx > 0 ?
-								<a
+								<button
+									type="button"
+ 									aria-label="Move up"
 									role="button"
 									className="btn mb-1 ms-1"
-									onClick={(e) => {
-										e.preventDefault();
+									onClick={() => {
 										handleMoveUp(idx);
 									}}
 								>
 									<IconArrowUp size={16} />
-								</a>
+								</button>
 								: null
 							}
 							{idx < values.length - 1 ?
-								<a
-									role="button"
+								<button
+									type="button"
+									aria-label="Move down"
 									className="btn mb-1 ms-1"
-									onClick={(e) => {
-										e.preventDefault();
+									onClick={() => {
 										handleMoveDown(idx);
 									}}
 								>
 									<IconArrowDown size={16} />
-								</a>
+								</button>
 								: null
 							}
-							<a
-								role="button"
+							<button
+								type="button"
+								aria-label="Remove"
 								className="btn btn-ghost btn-danger p-0 mb-1"
-								onClick={(e) => {
-									e.preventDefault();
+								onClick={() => {
 									handleRemove(item);
 								}}
 							>
 								<IconX size={16} />
-							</a>
+							</button>
 						</div>
 					))}
 					{values.length < defaultOptions.length && ( // only show add button if there are more acls that can be added
