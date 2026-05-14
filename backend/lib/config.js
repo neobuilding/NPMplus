@@ -211,4 +211,4 @@ const getPrivateKey = () => {
 	return instance.keys.key;
 };
 
-export { isCI, configHas, configGet, isSqlite, isMysql, isPostgres, getPrivateKey, getPublicKey };
+export { configHas, configGet, isSqlite, isMysql, isPostgres, getPrivateKey, getPublicKey };
