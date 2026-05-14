@@ -192,13 +192,6 @@ const isPostgres = () => {
 };
 
 /**
- * Are we running in CI?
- *
- * @returns {boolean}
- */
-const isCI = () => process.env.CI === "true" && process.env.DEBUG === "true";
-
-/**
  * Returns a public key
  *
  * @returns {string}

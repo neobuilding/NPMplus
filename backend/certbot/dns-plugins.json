@@ -263,6 +263,12 @@
 		"name": "Hover",
 		"package_name": "certbot-dns-hover"
 	},
+	"hosterby": {
+  		"credentials": "dns_hosterby_access_key = YOUR_ACCESS_KEY\ndns_hosterby_secret_key = YOUR_SECRET_KEY",
+  		"full_plugin_name": "dns-hosterby",
+  		"name": "hoster.by",
+  		"package_name": "certbot-dns-hosterby",
+	},
 	"infomaniak": {
 		"credentials": "dns_infomaniak_token = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 		"full_plugin_name": "dns-infomaniak",
@@ -496,5 +502,11 @@
 		"full_plugin_name": "dns-zoneedit",
 		"name": "ZoneEdit",
 		"package_name": "certbot-dns-zoneedit"
+	},
+	"rcode0": {
+		"credentials": "dns_rcode0_api_key = acme_0123456789abcdef0123456789abcdef01234567",
+		"full_plugin_name": "dns-rcode0",
+		"name": "RcodeZero",
+		"package_name": "certbot-dns-rcode0"
 	}
 }
