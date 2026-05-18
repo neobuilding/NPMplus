@@ -35,7 +35,18 @@
 			"example": "My Custom Cert"
 		},
 		"domain_names": {
-			"$ref": "../common.json#/properties/domain_names"
+			"description": "Domain Names separated by a comma",
+			"type": "array",
+			"maxItems": 99,
+			"uniqueItems": true,
+			"items": {
+				"type": "string",
+				"pattern": "^(([^.]+\\.)+[^.]+)|(\\[[0-9a-f:]+\\])$"
+			},
+			"example": [
+				"example.com",
+				"www.example.com"
+			]
 		},
 		"expires_on": {
 			"description": "Date and time of expiration",
