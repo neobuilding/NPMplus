@@ -26,9 +26,7 @@ class Certificate extends Model {
 		}
 
 		// Default for domain_names
-		if (typeof this.domain_names === "undefined") {
-			this.domain_names = [];
-		}
+		this.domain_names = cleanDomainNames(this.domain_names);
 
 		// Default for meta
 		if (typeof this.meta === "undefined") {
