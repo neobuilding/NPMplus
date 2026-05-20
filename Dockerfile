@@ -58,7 +58,7 @@ RUN git-clone-commit.sh https://github.com/nginx/nginx "$NGINX_VER" /src/nginx &
     echo "1b82e6da05f533683c3c62e376aa707d3c79265e03dd5be5d740e658122cc171  /src/nginx/2.patch" | sha256sum -c - && \
     git apply /src/nginx/2.patch && \
     wget -q https://patch-diff.githubusercontent.com/raw/nginx/nginx/pull/1333.patch -O /src/nginx/3.patch && \
-    echo "2bee0e098f0c58c0648e086c51c9ce7f68f83c0da0f1b7bfaa3ede02fc9b5fc2  /src/nginx/3.patch" | sha256sum -c - && \
+    echo "01bf75b130b8f91075ec913a400a8debfab6da0ac609711c7d412ddbe59dd898  /src/nginx/3.patch" | sha256sum -c - && \
     git apply /src/nginx/3.patch && \
     wget -q https://raw.githubusercontent.com/nginx-modules/ngx_http_tls_dyn_size/refs/heads/master/nginx__dynamic_tls_records_"$DTR_VER"%2B.patch -O /src/nginx/4.patch && \
     echo "0aa9c73e7515dbbd48ecc798f7894412c1a50e96e98aee25847e823059faf821  /src/nginx/4.patch" | sha256sum -c - && \
