@@ -125,7 +125,13 @@ router
 				},
 			);
 
-			const claims = tokens.claims();
+			const idTokenClaims = tokens.claims();
+
+			let claims = idTokenClaims;
+			if (!idTokenClaims.email) {
+				const userinfo = await client.fetchUserInfo(config, tokens.access_token, idTokenClaims.sub);
+				claims = { ...idTokenClaims, ...userinfo };
+			}
 
 			if (!claims.email) throw new errs.AuthError("The Identity Provider didn't send the 'email' claim");
 
