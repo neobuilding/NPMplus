@@ -528,7 +528,7 @@ if [ "$PUID" != "0" ]; then
          /tmp \
          -not \( -uid "$PUID" -and -gid "$PGID" \) \
          -print0 \
-         | xargs -0 -P "$(($(nproc)*4))" -n 50 chown "$PUID:$PGID" 
+         | xargs -r0 -P "$(($(nproc)*4))" -n 50 chown "$PUID:$PGID" 
     chown "$PUID:$PGID" /proc/self/fd/2
     if [ "$PHP83" = "true" ]; then
         sed -i "s|;\?user =.*|;user = root|" /data/php/83/php-fpm.d/www.conf
@@ -544,7 +544,7 @@ if [ "$PUID" != "0" ]; then
     fi
     exec su-exec "$PUID:$PGID" launch.sh
 else
-    find /data -not \( -uid 0 -and -gid 0 \) -print0 | xargs -0 -P "$(($(nproc)*4))" -n 50 chown 0:0
+    find /data -not \( -uid 0 -and -gid 0 \) -print0 | xargs -r0 -P "$(($(nproc)*4))" -n 50 chown 0:0
     if [ "$PHP83" = "true" ]; then
         sed -i "s|;user =.*|user = root|" /data/php/83/php-fpm.d/www.conf
         sed -i "s|;group =.*|group = root|" /data/php/83/php-fpm.d/www.conf
