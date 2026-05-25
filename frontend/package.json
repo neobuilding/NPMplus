@@ -19,11 +19,11 @@
 		"generate-password-browser": "1.1.0",
 		"humps": "2.0.1",
 		"qrcode.react": "4.2.0",
-		"query-string": "9.3.1",
+		"query-string": "9.4.0",
 		"react": "19.2.6",
 		"react-bootstrap": "2.10.10",
 		"react-dom": "19.2.6",
-		"react-intl": "10.1.9",
+		"react-intl": "10.1.11",
 		"react-markdown": "10.1.0",
 		"react-router-dom": "7.15.1",
 		"react-select": "5.10.2",
@@ -31,8 +31,8 @@
 		"rooks": "9.8.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.15",
-		"@formatjs/cli": "6.16.3",
+		"@biomejs/biome": "2.4.16",
+		"@formatjs/cli": "6.16.5",
 		"@formatjs/cli-native-linux-arm64": "1.2.0",
 		"@formatjs/cli-native-linux-x64": "1.1.0",
 		"@tanstack/react-query-devtools": "5.100.14",
@@ -49,10 +49,10 @@
 		"happy-dom": "20.9.0",
 		"postcss": "8.5.15",
 		"sass": "1.100.0",
-		"tmp": "0.2.5",
+		"tmp": "0.2.7",
 		"typescript": "6.0.3",
 		"vite": "8.0.14",
-		"vite-plugin-checker": "0.13.0",
+		"vite-plugin-checker": "0.14.1",
 		"vitest": "4.1.7"
 	}
 }
