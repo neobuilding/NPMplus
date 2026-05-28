@@ -176,31 +176,37 @@ RUN find /usr/local/nginx/modules -name "*.so" -exec strip -s {} \; && \
     /usr/local/nginx/sbin/nginx -V
 
 
-FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS frontend
+FROM --platform="$BUILDPLATFORM" alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS frontend
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG NODE_ENV=production
-COPY frontend /app
-WORKDIR /app/frontend
+WORKDIR /app
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml /app/
 RUN apk upgrade --no-cache -a && \
-    apk add --no-cache nodejs pnpm && \
+    apk add --no-cache nodejs pnpm binutils file && \
     pnpm install --frozen-lockfile && \
-    pnpm formatjs compile-folder src/locale/src src/locale/lang && \
+    pnpm cache delete && \
+    find /app/node_modules -name "*.map" -delete && \
+    find /app/node_modules -name "*.node" -type f -exec strip -s {} \; && \
+    find /app/node_modules -name "*.node" -type f -exec file {} \;
+COPY frontend /app
+RUN pnpm formatjs compile-folder src/locale/src src/locale/lang && \
     pnpm tsc && \
     pnpm vite build
 
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS backend
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG NODE_ENV=production
-COPY backend /app
 WORKDIR /app
+COPY backend/package.json backend/pnpm-lock.yaml backend/pnpm-workspace.yaml /app/
 RUN apk upgrade --no-cache -a && \
     apk add --no-cache nodejs pnpm binutils file && \
     pnpm install --frozen-lockfile --prod && \
     pnpm cache delete && \
-    find node_modules -name "*.map" -delete && \
-    rm -r node_modules/better-sqlite3/deps/sqlite3 && \
+    find /app/node_modules -name "*.map" -delete && \
+    rm -r /app/node_modules/better-sqlite3/deps/sqlite3 && \
     find /app/node_modules -name "*.node" -type f -exec strip -s {} \; && \
     find /app/node_modules -name "*.node" -type f -exec file {} \;
+COPY backend /app
 
 
 FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
