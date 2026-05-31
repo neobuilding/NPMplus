@@ -174,7 +174,7 @@
 		"package_name": "certbot-plugin-edgedns"
 	},
 	"eurodns": {
-		"credentials": "dns_eurodns_applicationId = myuser\ndns_eurodns_apiKey = mysecretpassword\ndns_eurodns_endpoint = https://rest-api.eurodns.com/user-api-gateway/proxy",
+		"credentials": "dns_eurodns_applicationId = myuser\ndns_eurodns_apiKey = mysecretpassword\ndns_eurodns_endpoint = https://rest-api.eurodns.com/dns-zones/",
 		"full_plugin_name": "dns-eurodns",
 		"name": "EuroDNS",
 		"package_name": "certbot-dns-eurodns"
