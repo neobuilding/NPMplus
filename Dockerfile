@@ -245,8 +245,6 @@ RUN apk upgrade --no-cache -a && \
     luarocks-5.1 install lua-resty-http && \
     luarocks-5.1 install lua-resty-string && \
     luarocks-5.1 install lua-resty-openssl && \
-    luarocks-5.1 install lua-resty-openidc && \
-    luarocks-5.1 install lua-resty-session && \
     \
     git-clone-commit.sh https://github.com/openresty/lua-resty-core "$LRC_VER" /src/lua-resty-core && \
     cd /src/lua-resty-core && \
