@@ -46,6 +46,7 @@ RUN apk upgrade --no-cache -a && \
 
 RUN git-clone-commit.sh https://github.com/aws/aws-lc "$AWSLC_VER" /src/aws-lc && \
     cd /src/aws-lc && \
+    git apply /src/aws-lc-tls13-cipher-preference.patch && \
     cmake /src/aws-lc -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DDISABLE_GO=ON -DDISABLE_PERL=ON && \
     ninja install
 
