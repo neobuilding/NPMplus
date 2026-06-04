@@ -44,6 +44,9 @@ RUN apk upgrade --no-cache -a && \
     apk add --no-cache git cmake clang lld ninja make binutils file \
                        linux-headers libatomic_ops-dev pcre2-dev luajit-dev zlib-ng-dev brotli-dev zstd-dev libxslt-dev openldap-dev quickjs-ng-dev libmaxminddb-dev clang-dev
 
+RUN git config --global advice.detachedHead false && \
+    git config --global init.defaultBranch main
+
 RUN git-clone-commit.sh https://github.com/aws/aws-lc "$AWSLC_VER" /src/aws-lc && \
     cd /src/aws-lc && \
     git apply /src/aws-lc-tls13-cipher-preference.patch && \
@@ -245,6 +248,9 @@ RUN apk upgrade --no-cache -a && \
     luarocks-5.1 install lua-resty-http && \
     luarocks-5.1 install lua-resty-string && \
     luarocks-5.1 install lua-resty-openssl && \
+    \
+    git config --global advice.detachedHead false && \
+    git config --global init.defaultBranch main && \
     \
     git-clone-commit.sh https://github.com/openresty/lua-resty-core "$LRC_VER" /src/lua-resty-core && \
     cd /src/lua-resty-core && \
