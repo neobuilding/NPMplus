@@ -480,7 +480,7 @@
 		"defaultMessage": "Disable Response Buffering"
 	},
 	"host.flags.disable-uri-sanitisation": {
-		"defaultMessage": "Disable URI Sanitisation"
+		"defaultMessage": "Disable URI Sanitisation, not recommended"
 	},
 	"host.flags.fancyindex": {
 		"defaultMessage": "Enable fancyindex"
@@ -495,7 +495,7 @@
 		"defaultMessage": "Send noindex header and block some user agents"
 	},
 	"host.flags.spoof-host-header": {
-		"defaultMessage": "Spoof Host Header"
+		"defaultMessage": "Spoof Host Header, not recommended"
 	},
 	"host.flags.upstream-compression": {
 		"defaultMessage": "Enable compression by upstream, not recommended"
