@@ -130,6 +130,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							npmplusProxyResponseBuffering: data?.npmplusProxyResponseBuffering || false,
 							npmplusProxyRequestBuffering: data?.npmplusProxyRequestBuffering || false,
 							npmplusDisableUriSanitisation: data?.npmplusDisableUriSanitisation || false,
+							npmplusSpoofHostHeader: data?.npmplusSpoofHostHeader || false,
 							npmplusUpstreamCompression: data?.npmplusUpstreamCompression || false,
 							npmplusFancyindex: data?.npmplusFancyindex || false,
 							npmplusXFrameOptions: data?.npmplusXFrameOptions || "SAMEORIGIN",
@@ -569,6 +570,42 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 																							form.values.forwardHost ||
 																							""
 																						).includes("/")
+																					}
+																				/>
+																			</label>
+																		)}
+																	</Field>
+																</span>
+															</label>
+														</div>
+														<div>
+															<label className="row" htmlFor="npmplusSpoofHostHeader">
+																<span className="col">
+																	<T id="host.flags.spoof-host-header" />
+																</span>
+																<span className="col-auto">
+																	<Field
+																		name="npmplusSpoofHostHeader"
+																		type="checkbox"
+																	>
+																		{({ field, form }: any) => (
+																			<label className="form-check form-check-single form-switch">
+																				<input
+																					{...field}
+																					id="npmplusSpoofHostHeader"
+																					className={cn("form-check-input", {
+																						"bg-lime": field.checked,
+																					})}
+																					type="checkbox"
+																					disabled={
+																						![
+																							"http",
+																							"https",
+																							"grpc",
+																							"grpcs",
+																						].includes(
+																							form.values.forwardScheme,
+																						)
 																					}
 																				/>
 																			</label>

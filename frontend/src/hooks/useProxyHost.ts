@@ -32,6 +32,7 @@ const fetchProxyHost = (id: number | "new") => {
 			npmplusProxyResponseBuffering: false,
 			npmplusProxyRequestBuffering: false,
 			npmplusDisableUriSanitisation: false,
+			npmplusSpoofHostHeader: false,
 			npmplusUpstreamCompression: false,
 			npmplusFancyindex: false,
 			npmplusXFrameOptions: "SAMEORIGIN",
