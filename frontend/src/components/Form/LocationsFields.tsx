@@ -356,6 +356,33 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 										</label>
 									</div>
 									<div>
+										<label className="row" htmlFor={`npmplusUpstreamCompression-${item.uiKey}`}>
+											<span className="col">
+												<T id="host.flags.upstream-compression" />
+											</span>
+											<span className="col-auto">
+												<label className="form-check form-check-single form-switch">
+													<input
+														id={`npmplusUpstreamCompression-${item.uiKey}`}
+														className={cn("form-check-input", {
+															"bg-lime": item.npmplusUpstreamCompression,
+														})}
+														type="checkbox"
+														checked={item.npmplusUpstreamCompression}
+														onChange={(e) =>
+															handleChange(
+																idx,
+																"npmplusUpstreamCompression",
+																e.target.checked,
+															)
+														}
+														disabled={["path", "empty"].includes(item.forwardScheme)}
+													/>
+												</label>
+											</span>
+										</label>
+									</div>
+									<div>
 										<label className="row" htmlFor={`npmplusDisableUriSanitisation-${item.uiKey}`}>
 											<span className="col">
 												<T id="host.flags.disable-uri-sanitisation" />
@@ -412,33 +439,6 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 																item.forwardScheme,
 															)
 														}
-													/>
-												</label>
-											</span>
-										</label>
-									</div>
-									<div>
-										<label className="row" htmlFor={`npmplusUpstreamCompression-${item.uiKey}`}>
-											<span className="col">
-												<T id="host.flags.upstream-compression" />
-											</span>
-											<span className="col-auto">
-												<label className="form-check form-check-single form-switch">
-													<input
-														id={`npmplusUpstreamCompression-${item.uiKey}`}
-														className={cn("form-check-input", {
-															"bg-lime": item.npmplusUpstreamCompression,
-														})}
-														type="checkbox"
-														checked={item.npmplusUpstreamCompression}
-														onChange={(e) =>
-															handleChange(
-																idx,
-																"npmplusUpstreamCompression",
-																e.target.checked,
-															)
-														}
-														disabled={["path", "empty"].includes(item.forwardScheme)}
 													/>
 												</label>
 											</span>

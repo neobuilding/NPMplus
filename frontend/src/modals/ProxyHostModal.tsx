@@ -536,6 +536,36 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 															</label>
 														</div>
 														<div>
+															<label className="row" htmlFor="npmplusUpstreamCompression">
+																<span className="col">
+																	<T id="host.flags.upstream-compression" />
+																</span>
+																<span className="col-auto">
+																	<Field
+																		name="npmplusUpstreamCompression"
+																		type="checkbox"
+																	>
+																		{({ field, form }: any) => (
+																			<label className="form-check form-check-single form-switch">
+																				<input
+																					{...field}
+																					id="npmplusUpstreamCompression"
+																					className={cn("form-check-input", {
+																						"bg-lime": field.checked,
+																					})}
+																					type="checkbox"
+																					disabled={
+																						form.values.forwardScheme ===
+																						"path"
+																					}
+																				/>
+																			</label>
+																		)}
+																	</Field>
+																</span>
+															</label>
+														</div>
+														<div>
 															<label
 																className="row"
 																htmlFor="npmplusDisableUriSanitisation"
@@ -606,36 +636,6 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 																						].includes(
 																							form.values.forwardScheme,
 																						)
-																					}
-																				/>
-																			</label>
-																		)}
-																	</Field>
-																</span>
-															</label>
-														</div>
-														<div>
-															<label className="row" htmlFor="npmplusUpstreamCompression">
-																<span className="col">
-																	<T id="host.flags.upstream-compression" />
-																</span>
-																<span className="col-auto">
-																	<Field
-																		name="npmplusUpstreamCompression"
-																		type="checkbox"
-																	>
-																		{({ field, form }: any) => (
-																			<label className="form-check form-check-single form-switch">
-																				<input
-																					{...field}
-																					id="npmplusUpstreamCompression"
-																					className={cn("form-check-input", {
-																						"bg-lime": field.checked,
-																					})}
-																					type="checkbox"
-																					disabled={
-																						form.values.forwardScheme ===
-																						"path"
 																					}
 																				/>
 																			</label>
