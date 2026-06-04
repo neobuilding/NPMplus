@@ -488,11 +488,13 @@ const internalCertificate = {
 	 * Validates that the certs provided are good.
 	 * No access required here, nothing is changed or stored.
 	 *
+	 * @param   {Access}  access
 	 * @param   {Object}  data
 	 * @param   {Object}  data.files
 	 * @returns {Promise}
 	 */
-	validate: async (data) => {
+	validate: async (access, data) => {
+		await access.can("certificates:create");
 		const finalData = {};
 		for (const [name, file] of Object.entries(data.files)) {
 			if (internalCertificate.allowedSslFiles.includes(name)) {
@@ -524,7 +526,7 @@ const internalCertificate = {
 		}
 		const isMtls = row.provider === "mtls";
 
-		const validations = await internalCertificate.validate(data);
+		const validations = await internalCertificate.validate(access, data);
 		if (typeof validations.certificate === "undefined") {
 			throw new error.ValidationError("Certificate file was not provided");
 		}
