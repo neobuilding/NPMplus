@@ -34,7 +34,8 @@
 		"npmplus_upstream_compression",
 		"npmplus_fancyindex",
 		"npmplus_x_frame_options",
-		"npmplus_auth_request"
+		"npmplus_auth_request",
+		"npmplus_auth_request_upstream"
 	],
 	"properties": {
 		"id": {
@@ -127,6 +128,10 @@
 				"authentik-send-basic-auth"
 			],
 			"example": "none"
+		},
+		"npmplus_auth_request_upstream": {
+			"type": "string",
+			"example": ""
 		},
 		"advanced_config": {
 			"type": "string",
@@ -249,6 +254,9 @@
 					},
 					"npmplus_auth_request": {
 						"$ref": "#/properties/npmplus_auth_request"
+					},
+					"npmplus_auth_request_upstream": {
+						"$ref": "#/properties/npmplus_auth_request_upstream"
 					},
 					"advanced_config": {
 						"type": "string"

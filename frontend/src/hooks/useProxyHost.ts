@@ -35,6 +35,7 @@ const fetchProxyHost = (id: number | "new") => {
 			npmplusFancyindex: false,
 			npmplusXFrameOptions: "SAMEORIGIN",
 			npmplusAuthRequest: "none",
+			npmplusAuthRequestUpstream: "",
 			npmplusAccessListType: "public",
 		} as ProxyHost);
 	}

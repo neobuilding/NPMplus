@@ -20,7 +20,7 @@ import {
 import { useProxyHost, useSetProxyHost, useUser } from "src/hooks";
 import { intl, T } from "src/locale";
 import { MANAGE, PROXY_HOSTS } from "src/modules/Permissions";
-import { validateNumber } from "src/modules/Validations";
+import { validateNumber, validateUpstreamUrl } from "src/modules/Validations";
 import { showObjectSuccess } from "src/notifications";
 
 interface Props extends InnerModalProps {
@@ -133,6 +133,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							npmplusFancyindex: data?.npmplusFancyindex || false,
 							npmplusXFrameOptions: data?.npmplusXFrameOptions || "SAMEORIGIN",
 							npmplusAuthRequest: data?.npmplusAuthRequest || "none",
+							npmplusAuthRequestUpstream: data?.npmplusAuthRequestUpstream || "",
 						} as any
 					}
 					onSubmit={onSubmit}
@@ -630,7 +631,9 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 														</div>
 														<div>
 															<label className="row" htmlFor="npmplusAuthRequest">
-																<span className="col">Auth Request</span>
+																<span className="col">
+																	<T id="host.auth-request" />
+																</span>
 																<span className="col-auto">
 																	<Field name="npmplusAuthRequest">
 																		{({ field, form }: any) => (
@@ -680,6 +683,49 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 																</span>
 															</label>
 														</div>
+														{values.npmplusAuthRequest !== "none" && (
+															<div>
+																<label
+																	className="row"
+																	htmlFor="npmplusAuthRequestUpstream"
+																>
+																	<span className="col">
+																		<T id="host.auth-request-upstream" />
+																	</span>
+																	<span className="col-auto">
+																		<Field
+																			name="npmplusAuthRequestUpstream"
+																			validate={validateUpstreamUrl()}
+																		>
+																			{({ field, form }: any) => (
+																				<label>
+																					<input
+																						id="npmplusAuthRequestUpstream"
+																						type="text"
+																						className={`form-control ${form.errors.npmplusAuthRequestUpstream && form.touched.npmplusAuthRequestUpstream ? "is-invalid" : ""}`}
+																						placeholder="keep empty to reuse env value"
+																						pattern="^https?://([^/:]+|\[[a-fA-F0-9:]+\]):[0-9]+$"
+																						{...field}
+																					/>
+																					{form.errors
+																						.npmplusAuthRequestUpstream ? (
+																						<div className="invalid-feedback">
+																							{form.errors
+																								.npmplusAuthRequestUpstream &&
+																							form.touched
+																								.npmplusAuthRequestUpstream
+																								? form.errors
+																										.npmplusAuthRequestUpstream
+																								: null}
+																						</div>
+																					) : null}
+																				</label>
+																			)}
+																		</Field>
+																	</span>
+																</label>
+															</div>
+														)}
 													</div>
 												</div>
 												<Field name="npmplusLocationConfig">

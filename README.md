@@ -154,6 +154,8 @@ location ~* [^/]\.php(?:$|/) {
 
 ## Examples of implementing some services using auth_request
 
+Note: The upstream URL for an auth request provider can be overridden in the UI; a main location's override takes precedence over any custom location's override.
+
 ### Anubis
 1. Deploy an anubis container (see the compose.yaml for an example and information)
 2. In the mounted anubis bot policy file the "status_codes" should be set to 401 and 403, like this:

@@ -323,7 +323,43 @@ const internalNginx = {
 				}
 			});
 
+			const originalLocations = [...host.locations];
 			host.locations = await internalNginx.renderLocations(host);
+
+			const providerEnvMap = {
+				anubis: "AUTH_REQUEST_ANUBIS_UPSTREAM",
+				tinyauth: "AUTH_REQUEST_TINYAUTH_UPSTREAM",
+				oauth2proxy: "AUTH_REQUEST_OAUTH2PROXY_UPSTREAM",
+				voidauth: "AUTH_REQUEST_VOIDAUTH_UPSTREAM",
+				authelia: "AUTH_REQUEST_AUTHELIA_UPSTREAM",
+				authentik: "AUTH_REQUEST_AUTHENTIK_UPSTREAM",
+			};
+
+			for (const [provider, envKey] of Object.entries(providerEnvMap)) {
+				let effectiveUpstream = process.env[envKey] || "";
+
+				if (
+					(host.npmplus_auth_request === provider ||
+						(provider === "authentik" && host.npmplus_auth_request === "authentik-send-basic-auth")) &&
+					host.npmplus_auth_request_upstream
+				) {
+					effectiveUpstream = host.npmplus_auth_request_upstream;
+				} else {
+					for (const location of originalLocations) {
+						if (
+							(location.npmplus_auth_request === provider ||
+								(provider === "authentik" &&
+									location.npmplus_auth_request === "authentik-send-basic-auth")) &&
+							location.npmplus_auth_request_upstream
+						) {
+							effectiveUpstream = location.npmplus_auth_request_upstream;
+							break;
+						}
+					}
+				}
+
+				host[`auth_request_${provider}_upstream_resolved`] = effectiveUpstream;
+			}
 		}
 
 		try {

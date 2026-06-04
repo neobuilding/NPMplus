@@ -50,6 +50,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
 		npmplusAuthRequest: "none",
+		npmplusAuthRequestUpstream: "",
 		npmplusAccessListType: "global",
 		id: null,
 	};
@@ -426,7 +427,9 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 									</div>
 									<div>
 										<label className="row" htmlFor={`npmplusAuthRequest-${item.uiKey}`}>
-											<span className="col">Auth Request</span>
+											<span className="col">
+												<T id="host.auth-request" />
+											</span>
 											<span className="col-auto">
 												<label className="form-check form-check-single form-switch">
 													<select
@@ -452,6 +455,40 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 											</span>
 										</label>
 									</div>
+									{item.npmplusAuthRequest !== "none" && (
+										<div>
+											<label className="row" htmlFor={`npmplusAuthRequestUpstream-${item.uiKey}`}>
+												<span className="col">
+													<T id="host.auth-request-upstream" />
+												</span>
+												<span className="col-auto">
+													<input
+														id={`npmplusAuthRequestUpstream-${item.uiKey}`}
+														type="text"
+														className={`form-control ${item.npmplusAuthRequestUpstream && !/^https?:\/\/([^/:]+|\[[a-fA-F0-9:]+\]):[0-9]+$/.test(item.npmplusAuthRequestUpstream) ? "is-invalid" : ""}`}
+														placeholder="keep empty to reuse env value"
+														pattern="^https?://([^/:]+|\[[a-fA-F0-9:]+\]):[0-9]+$"
+														value={item.npmplusAuthRequestUpstream || ""}
+														onChange={(e) =>
+															handleChange(
+																idx,
+																"npmplusAuthRequestUpstream",
+																e.target.value,
+															)
+														}
+													/>
+													{item.npmplusAuthRequestUpstream &&
+													!/^https?:\/\/([^/:]+|\[[a-fA-F0-9:]+\]):[0-9]+$/.test(
+														item.npmplusAuthRequestUpstream,
+													) ? (
+														<div className="invalid-feedback">
+															<T id="error.invalid-upstream-url" />
+														</div>
+													) : null}
+												</span>
+											</label>
+										</div>
+									)}
 								</div>
 							</div>
 						</div>

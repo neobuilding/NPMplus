@@ -422,6 +422,9 @@
 	"error.invalid-email": {
 		"defaultMessage": "Invalid email address"
 	},
+	"error.invalid-upstream-url": {
+		"defaultMessage": "Must be a valid URL with scheme, host and port (no path)"
+	},
 	"error.max-character-length": {
 		"defaultMessage": "Maximum length is {max} character{max, plural, one {} other {s}}"
 	},
@@ -454,6 +457,12 @@
 	},
 	"help": {
 		"defaultMessage": "Help"
+	},
+	"host.auth-request": {
+		"defaultMessage": "Auth Request"
+	},
+	"host.auth-request-upstream": {
+		"defaultMessage": "Auth Request Upstream"
 	},
 	"host.flags.block-exploits": {
 		"defaultMessage": "Block Common Exploits"
