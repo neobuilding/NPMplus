@@ -108,6 +108,7 @@ export interface ProxyLocation {
 	npmplusCrowdsecAppsec: boolean;
 	npmplusProxyResponseBuffering: boolean;
 	npmplusProxyRequestBuffering: boolean;
+	npmplusDisableUriSanitisation: boolean;
 	npmplusUpstreamCompression: boolean;
 	npmplusFancyindex: boolean;
 	npmplusXFrameOptions: string;
@@ -152,6 +153,7 @@ export interface ProxyHost {
 	npmplusCrowdsecAppsec: boolean;
 	npmplusProxyResponseBuffering: boolean;
 	npmplusProxyRequestBuffering: boolean;
+	npmplusDisableUriSanitisation: boolean;
 	npmplusUpstreamCompression: boolean;
 	npmplusFancyindex: boolean;
 	npmplusXFrameOptions: string;

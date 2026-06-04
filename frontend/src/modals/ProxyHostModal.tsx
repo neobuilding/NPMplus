@@ -129,6 +129,7 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 							npmplusCrowdsecAppsec: data?.npmplusCrowdsecAppsec || false,
 							npmplusProxyResponseBuffering: data?.npmplusProxyResponseBuffering || false,
 							npmplusProxyRequestBuffering: data?.npmplusProxyRequestBuffering || false,
+							npmplusDisableUriSanitisation: data?.npmplusDisableUriSanitisation || false,
 							npmplusUpstreamCompression: data?.npmplusUpstreamCompression || false,
 							npmplusFancyindex: data?.npmplusFancyindex || false,
 							npmplusXFrameOptions: data?.npmplusXFrameOptions || "SAMEORIGIN",
@@ -534,6 +535,49 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 															</label>
 														</div>
 														<div>
+															<label
+																className="row"
+																htmlFor="npmplusDisableUriSanitisation"
+															>
+																<span className="col">
+																	<T id="host.flags.disable-uri-sanitisation" />
+																</span>
+																<span className="col-auto">
+																	<Field
+																		name="npmplusDisableUriSanitisation"
+																		type="checkbox"
+																	>
+																		{({ field, form }: any) => (
+																			<label className="form-check form-check-single form-switch">
+																				<input
+																					{...field}
+																					id="npmplusDisableUriSanitisation"
+																					className={cn("form-check-input", {
+																						"bg-lime": field.checked,
+																					})}
+																					type="checkbox"
+																					disabled={
+																						![
+																							"http",
+																							"https",
+																							"grpc",
+																							"grpcs",
+																						].includes(
+																							form.values.forwardScheme,
+																						) ||
+																						(
+																							form.values.forwardHost ||
+																							""
+																						).includes("/")
+																					}
+																				/>
+																			</label>
+																		)}
+																	</Field>
+																</span>
+															</label>
+														</div>
+														<div>
 															<label className="row" htmlFor="npmplusUpstreamCompression">
 																<span className="col">
 																	<T id="host.flags.upstream-compression" />
@@ -757,7 +801,13 @@ const ProxyHostModal = EasyModal.create(({ id, isClone = false, visible, remove 
 												</Field>
 											</div>
 											<div className="tab-pane" id="tab-locations" role="tabpanel">
-												<LocationsFields initialValues={data?.locations || []} />
+												<LocationsFields
+													initialValues={(data?.locations || []).map((loc: any) => ({
+														...loc,
+														npmplusDisableUriSanitisation:
+															loc.npmplusDisableUriSanitisation ?? true,
+													}))}
+												/>
 											</div>
 											<div className="tab-pane" id="tab-ssl" role="tabpanel">
 												<SSLCertificateField

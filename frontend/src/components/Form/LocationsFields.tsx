@@ -46,6 +46,7 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 		npmplusCrowdsecAppsec: false,
 		npmplusProxyResponseBuffering: false,
 		npmplusProxyRequestBuffering: false,
+		npmplusDisableUriSanitisation: false,
 		npmplusUpstreamCompression: false,
 		npmplusFancyindex: false,
 		npmplusXFrameOptions: "SAMEORIGIN",
@@ -348,6 +349,37 @@ export function LocationsFields({ initialValues, name = "locations" }: Props) {
 															)
 														}
 														disabled={!["http", "https"].includes(item.forwardScheme)}
+													/>
+												</label>
+											</span>
+										</label>
+									</div>
+									<div>
+										<label className="row" htmlFor={`npmplusDisableUriSanitisation-${item.uiKey}`}>
+											<span className="col">
+												<T id="host.flags.disable-uri-sanitisation" />
+											</span>
+											<span className="col-auto">
+												<label className="form-check form-check-single form-switch">
+													<input
+														id={`npmplusDisableUriSanitisation-${item.uiKey}`}
+														className={cn("form-check-input", {
+															"bg-lime": item.npmplusDisableUriSanitisation,
+														})}
+														type="checkbox"
+														checked={item.npmplusDisableUriSanitisation}
+														onChange={(e) =>
+															handleChange(
+																idx,
+																"npmplusDisableUriSanitisation",
+																e.target.checked,
+															)
+														}
+														disabled={
+															!["http", "https", "grpc", "grpcs"].includes(
+																item.forwardScheme,
+															) || (item.forwardHost || "").includes("/")
+														}
 													/>
 												</label>
 											</span>

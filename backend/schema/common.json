@@ -161,6 +161,10 @@
 			"type": "boolean",
 			"example": false
 		},
+		"npmplus_disable_uri_sanitisation": {
+			"type": "boolean",
+			"example": false
+		},
 		"npmplus_upstream_compression": {
 			"description": "Enable compression by upstream",
 			"type": "boolean",

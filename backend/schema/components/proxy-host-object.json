@@ -35,7 +35,8 @@
 		"npmplus_fancyindex",
 		"npmplus_x_frame_options",
 		"npmplus_auth_request",
-		"npmplus_auth_request_upstream"
+		"npmplus_auth_request_upstream",
+		"npmplus_disable_uri_sanitisation"
 	],
 	"properties": {
 		"id": {
@@ -98,6 +99,9 @@
 		},
 		"npmplus_proxy_response_buffering": {
 			"$ref": "../common.json#/properties/npmplus_proxy_response_buffering"
+		},
+		"npmplus_disable_uri_sanitisation": {
+			"$ref": "../common.json#/properties/npmplus_disable_uri_sanitisation"
 		},
 		"npmplus_upstream_compression": {
 			"$ref": "../common.json#/properties/npmplus_upstream_compression"
@@ -242,6 +246,9 @@
 					},
 					"npmplus_proxy_response_buffering": {
 						"$ref": "#/properties/npmplus_proxy_response_buffering"
+					},
+					"npmplus_disable_uri_sanitisation": {
+						"$ref": "#/properties/npmplus_disable_uri_sanitisation"
 					},
 					"npmplus_upstream_compression": {
 						"$ref": "#/properties/npmplus_upstream_compression"
