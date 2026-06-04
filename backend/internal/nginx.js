@@ -166,7 +166,11 @@ const internalNginx = {
 				}
 			}
 
-			location.forward_upstream_name = `upstream_${host.id}_location_${idx}`;
+			if (location.forward_host?.startsWith("cu_")) {
+				location.forward_upstream_name = location.forward_host;
+			} else {
+				location.forward_upstream_name = `upstream_${host.id}_location_${idx}`;
+			}
 			renderedLocations += await renderEngine.parseAndRender(template, location);
 		}
 
@@ -204,8 +208,12 @@ const internalNginx = {
 				host.forward_path = `/${split.join("/")}`;
 			}
 
-			host.forward_upstream_name = `upstream_${host.id}`;
-			renderedUpstreams += await renderEngine.parseAndRender(template, host);
+			if (host.forward_host?.startsWith("cu_")) {
+				host.forward_upstream_name = host.forward_host;
+			} else {
+				host.forward_upstream_name = `upstream_${host.id}`;
+				renderedUpstreams += await renderEngine.parseAndRender(template, host);
+			}
 		}
 
 		for (const [idx, location] of (host.locations || []).entries()) {
@@ -228,8 +236,12 @@ const internalNginx = {
 				location.forward_path = `/${split.join("/")}`;
 			}
 
-			location.forward_upstream_name = `upstream_${host.id}_location_${idx}`;
-			renderedUpstreams += await renderEngine.parseAndRender(template, location);
+			if (location.forward_host?.startsWith("cu_")) {
+				location.forward_upstream_name = location.forward_host;
+			} else {
+				location.forward_upstream_name = `upstream_${host.id}_location_${idx}`;
+				renderedUpstreams += await renderEngine.parseAndRender(template, location);
+			}
 		}
 
 		return renderedUpstreams;
