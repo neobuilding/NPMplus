@@ -443,16 +443,8 @@ const internalNginx = {
 			typeof host === "undefined" ? 0 : host.id,
 		);
 
-		const filesToDelete = [config_file, `${config_file}.err`];
-
-		for (const filename of filesToDelete) {
-			try {
-				debug(logger, `Deleting file: ${filename}`);
-				await rm(filename, { force: true });
-			} catch (err) {
-				debug(logger, "Could not delete file:", JSON.stringify(err, null, 2));
-			}
-		}
+		await rm(config_file, { force: true });
+		await rm(`${config_file}.err`, { force: true });
 	},
 
 	/**
