@@ -261,6 +261,20 @@ const internalDeadHost = {
 			throw new errs.ValidationError("Host is already enabled");
 		}
 
+		const domainNameCheckPromises = [];
+		row.domain_names.map((domain_name) => {
+			domainNameCheckPromises.push(internalHost.isHostnameTaken(domain_name));
+			return true;
+		});
+		await Promise.all(domainNameCheckPromises).then((checkResults) => {
+			checkResults.map((result) => {
+				if (result.is_taken) {
+					throw new errs.ValidationError(`${result.hostname} is already in use by an active host`);
+				}
+				return true;
+			});
+		});
+
 		row.enabled = 1;
 
 		await deadHostModel.query().where("id", row.id).patch({

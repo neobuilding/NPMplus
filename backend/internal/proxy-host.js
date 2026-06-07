@@ -376,6 +376,22 @@ const internalProxyHost = {
 					throw new errs.ValidationError("Host is already enabled");
 				}
 
+				const domainNameCheckPromises = [];
+				row.domain_names.map((domain_name) => {
+					domainNameCheckPromises.push(internalHost.isHostnameTaken(domain_name));
+					return true;
+				});
+				return Promise.all(domainNameCheckPromises).then((checkResults) => {
+					checkResults.map((result) => {
+						if (result.is_taken) {
+							throw new errs.ValidationError(`${result.hostname} is already in use by an active host`);
+						}
+						return true;
+					});
+					return row;
+				});
+			})
+			.then((row) => {
 				row.enabled = 1;
 
 				return proxyHostModel
