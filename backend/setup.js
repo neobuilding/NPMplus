@@ -192,6 +192,7 @@ const regenerateAllHosts = async () => {
 		}
 
 		await utils.writeHash();
+		await internalNginx.reload();
 	}
 };
 
