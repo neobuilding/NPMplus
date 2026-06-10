@@ -291,6 +291,12 @@ if [ -n "$IP_RANGES_FETCH_ENABLED" ]; then
 fi
 
 #upstream
+if [ -n "$NPM_ADMIN_PORT" ]; then
+    echo "NPM_ADMIN_PORT env is not supported, please use NPM_PORT"
+    sleep inf
+fi
+
+#upstream
 if [ -n "$DB_SQLITE_FILE" ]; then
     echo "DB_SQLITE_FILE env is not supported, the database needs to be in /data/npmplus/database.sqlite."
     sleep inf
