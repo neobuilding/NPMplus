@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.24.0@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
-FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS nginx
+FROM alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS nginx
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 ARG LUAJIT_INC=/usr/include/luajit-2.1
@@ -34,15 +34,19 @@ ARG CC=clang
 ARG CFLAGS="$FLAGS -m64 -O3 -pipe -flto=full -ffunction-sections -fdata-sections -fno-math-errno -ffp-contract=fast -fstack-clash-protection -fstack-protector-strong -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=3 -ftrivial-auto-var-init=zero -fno-delete-null-pointer-checks -fno-strict-overflow -fno-strict-aliasing -fno-semantic-interposition -fno-plt -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -Wformat=2 -Werror=format-security -Wno-sign-compare"
 ARG CXX=clang++
 ARG CXXFLAGS="$FLAGS -m64 -O3 -pipe -flto=full -ffunction-sections -fdata-sections -fno-math-errno -ffp-contract=fast -fstack-clash-protection -fstack-protector-strong -fzero-call-used-regs=used-gpr -fstrict-flex-arrays=3 -ftrivial-auto-var-init=zero -fno-delete-null-pointer-checks -fno-strict-overflow -fno-strict-aliasing -fno-semantic-interposition -fno-plt -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS=1 -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE -Wformat=2 -Werror=format-security -Wno-sign-compare"
-ARG LDFLAGS="-fuse-ld=lld -m64 -Wl,-s -Wl,-O2 -Wl,--lto-O3 -Wl,--icf=safe -Wl,--gc-sections -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--sort-common -Wl,--as-needed -Wl,-z,pack-relative-relocs -Wl,--no-copy-dt-needed-entries"
+ARG LDFLAGS="-m64 -Wl,-s -Wl,-O2 -Wl,--lto-O3 -Wl,--icf=safe -Wl,--gc-sections -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--sort-common -Wl,--as-needed -Wl,-z,pack-relative-relocs -Wl,--no-copy-dt-needed-entries"
+ARG AR=llvm-ar
 
 WORKDIR /src
 COPY patches/*.patch /src
 COPY rootfs/usr/local/bin/git-clone-commit.sh /usr/local/bin/git-clone-commit.sh
 
 RUN apk upgrade --no-cache -a && \
-    apk add --no-cache git cmake clang lld ninja make binutils file \
+    apk add --no-cache git clang lld compiler-rt llvm-libunwind-dev libc++-dev ninja cmake make llvm file \
                        linux-headers libatomic_ops-dev pcre2-dev luajit-dev zlib-ng-dev brotli-dev zstd-dev libxslt-dev openldap-dev quickjs-ng-dev libmaxminddb-dev clang-dev
+
+RUN for f in $(apk info --no-cache -qL libgcc-static libstdc++-dev); do rm /"$f"; done && \
+    echo "-fuse-ld=lld --rtlib=compiler-rt --unwindlib=libunwind -stdlib=libc++" | tee /etc/clang*/*.cfg
 
 RUN git config --global advice.detachedHead false && \
     git config --global init.defaultBranch main
@@ -161,14 +165,14 @@ RUN git-clone-commit.sh https://github.com/openappsec/attachment "$OASA_VER" /sr
     ninja && \
     mv -v /src/attachment/attachments/nginx/ngx_module/libngx_module.so /usr/local/nginx/modules/libngx_module.so
 
-RUN find /usr/local/nginx/modules -name "*.so" -exec strip -s {} \; && \
-    strip -s /usr/local/nginx/sbin/nginx && \
-    strip -s /usr/local/lib/libcrypto.so && \
-    strip -s /usr/local/lib/libssl.so && \
-    strip -s /usr/local/bin/bssl && \
-    strip -s /src/attachment/core/shmem_ipc_2/libshmem_ipc_2.so && \
-    strip -s /src/attachment/core/compression/libosrc_compression_utils.so && \
-    strip -s /src/attachment/attachments/nginx/nginx_attachment_util/libosrc_nginx_attachment_util.so && \
+RUN find /usr/local/nginx/modules -name "*.so" -exec llvm-strip -s {} \; && \
+    llvm-strip -s /usr/local/nginx/sbin/nginx && \
+    llvm-strip -s /usr/local/lib/libcrypto.so && \
+    llvm-strip -s /usr/local/lib/libssl.so && \
+    llvm-strip -s /usr/local/bin/bssl && \
+    llvm-strip -s /src/attachment/core/shmem_ipc_2/libshmem_ipc_2.so && \
+    llvm-strip -s /src/attachment/core/compression/libosrc_compression_utils.so && \
+    llvm-strip -s /src/attachment/attachments/nginx/nginx_attachment_util/libosrc_nginx_attachment_util.so && \
     \
     find /usr/local/nginx/modules -name "*.so" -exec file {} \; && \
     file /usr/local/nginx/sbin/nginx && \
@@ -181,40 +185,40 @@ RUN find /usr/local/nginx/modules -name "*.so" -exec strip -s {} \; && \
     /usr/local/nginx/sbin/nginx -V
 
 
-FROM --platform="$BUILDPLATFORM" alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS frontend
+FROM --platform="$BUILDPLATFORM" alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS frontend
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG NODE_ENV=production
 WORKDIR /app
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml /app/
 RUN apk upgrade --no-cache -a && \
-    apk add --no-cache nodejs pnpm binutils file && \
+    apk add --no-cache nodejs pnpm llvm file && \
     pnpm install --frozen-lockfile && \
     pnpm cache delete && \
     find /app/node_modules -name "*.map" -delete && \
-    find /app/node_modules -name "*.node" -type f -exec strip -s {} \; && \
+    find /app/node_modules -name "*.node" -type f -exec llvm-strip -s {} \; && \
     find /app/node_modules -name "*.node" -type f -exec file {} \;
 COPY frontend /app
 RUN pnpm formatjs compile-folder src/locale/src src/locale/lang && \
     pnpm tsc && \
     pnpm vite build
 
-FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11 AS backend
+FROM alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4 AS backend
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG NODE_ENV=production
 WORKDIR /app
 COPY backend/package.json backend/pnpm-lock.yaml backend/pnpm-workspace.yaml /app/
 RUN apk upgrade --no-cache -a && \
-    apk add --no-cache nodejs pnpm binutils file && \
+    apk add --no-cache nodejs pnpm llvm file && \
     pnpm install --frozen-lockfile --prod && \
     pnpm cache delete && \
     find /app/node_modules -name "*.map" -delete && \
     rm -r /app/node_modules/better-sqlite3/deps/sqlite3 && \
-    find /app/node_modules -name "*.node" -type f -exec strip -s {} \; && \
+    find /app/node_modules -name "*.node" -type f -exec llvm-strip -s {} \; && \
     find /app/node_modules -name "*.node" -type f -exec file {} \;
 COPY backend /app
 
 
-FROM alpine:3.23.4@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
+FROM alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ENV NODE_ENV=production
 ARG LRC_VER=6fec23e2149c88b33b39fec8a5ebdd67a3e0dd88 # v0.1.34rc3
