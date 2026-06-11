@@ -25,8 +25,9 @@ jobs:
           password: ${{ github.token }}
       - name: version
         run: |
-          sed -i "s|\"0.0.0\"|\"${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)\"|g" frontend/package.json
-          sed -i "s|\"0.0.0\"|\"${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)\"|g" backend/package.json
+          sudo apt-get install -y moreutils
+          jq --arg v "${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)" '.version = $v' frontend/package.json | sponge frontend/package.json
+          jq --arg v "${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)" '.version = $v' backend/package.json | sponge backend/package.json
       - name: Build
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
@@ -55,8 +56,9 @@ jobs:
           password: ${{ github.token }}
       - name: version
         run: |
-          sed -i "s|\"0.0.0\"|\"${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)\"|g" frontend/package.json
-          sed -i "s|\"0.0.0\"|\"${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)\"|g" backend/package.json
+          sudo apt-get install -y moreutils
+          jq --arg v "${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)" '.version = $v' frontend/package.json | sponge frontend/package.json
+          jq --arg v "${{ inputs.tag }}-$(git rev-parse --short HEAD)-$(cat .version)" '.version = $v' backend/package.json | sponge backend/package.json
       - name: Build
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
