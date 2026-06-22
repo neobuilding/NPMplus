@@ -414,7 +414,7 @@ const internalProxyHost = {
 							action: "enabled",
 							object_type: "proxy-host",
 							object_id: row.id,
-							meta: _.omit(row, omissions()),
+							meta: _.omit(internalProxyHostAccessList.maskAccessListItems(row), omissions()),
 						});
 					});
 			})

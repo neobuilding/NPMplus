@@ -92,6 +92,8 @@ const internalAccessList = {
 			meta: internalAccessList.maskItems(data),
 		});
 
+		if (Array.isArray(freshRow.proxy_hosts))
+			freshRow.proxy_hosts = freshRow.proxy_hosts.map(internalProxyHostAccessList.maskAccessListItems);
 		return internalAccessList.maskItems(freshRow);
 	},
 
@@ -202,6 +204,8 @@ const internalAccessList = {
 			await internalNginx.bulkGenerateConfigs(proxyHostModel, "proxy_host", freshRow.proxy_hosts);
 		}
 		await internalNginx.reload();
+		if (Array.isArray(freshRow.proxy_hosts))
+			freshRow.proxy_hosts = freshRow.proxy_hosts.map(internalProxyHostAccessList.maskAccessListItems);
 		return internalAccessList.maskItems(freshRow);
 	},
 
@@ -252,6 +256,8 @@ const internalAccessList = {
 		if (!row?.id) {
 			throw new errs.ItemNotFoundError(thisData.id);
 		}
+		if (!skipMasking && Array.isArray(row.proxy_hosts))
+			row.proxy_hosts = row.proxy_hosts.map(internalProxyHostAccessList.maskAccessListItems);
 		if (!skipMasking && typeof row.items !== "undefined" && row.items) {
 			row = internalAccessList.maskItems(row);
 		}
